@@ -1,127 +1,118 @@
-:alias x v0
-:alias y v1
-:alias dx v2
-:alias dy v3
-:alias hop v8
-:alias prevX v4
-:alias temp v5
+	:alias x v0
+	:alias y v1
+	:alias dx v2
+	:alias dy v3
+	:alias hop v8
+	:alias prevX v4
+	:alias temp v5
 
-: main
-	hires
-	drawBG
-	x := 0
-	y := 0
-
-	loop	
-		prevX := x
-		v2 := 5 if v2 key then if hop == 1 begin
-			hop := 0
-			dy := -8
-		end
-		v2 := 7 if v2 key then x += -1
-		v2 := 8 if v2 key then y += 1
-		v2 := 9 if v2 key then x += 1
-
-		drawAmy
-		checkCollisionH
-		drawAmy
-
-		gravity
-		drawAmy
-		checkCollisionH
-		checkCollisionV
-		
-		loop
-			vd := delay
-			if vd != 0 then again
-		vd := 2
-		delay := vd
-		drawAmy
-	again
-
-;
-
-: checkCollisionH
-	if vf == 1 begin
-		#first test horizontal collision left and right#
-		drawAmy
-		temp := x
-		x := prevX
-		drawAmy
-		if vf == 0 then ;
-		drawAmy
-		x := temp
-	end
-
-
-: checkCollisionV
-	if vf == 1 begin
-		if dy == 0 then ;
-		temp := 1
-		if dy > 0 then temp := -1
-		dy := 0
+	: main
+		hires
+		drawBG
+		x := 0
+		y := 0
 		hop := 1
-		drawAmy
-		if temp == 1 begin
-		 :breakpoint up
-		 end
-		loop
+		loop	
+			prevX := x
+			v2 := 5 if v2 key then if hop == 1 begin
+				hop := 0
+				dy := -8
+			end
+			v2 := 7 if v2 key then x += -1
+			v2 := 9 if v2 key then x += 1
+
 			drawAmy
-			y += temp
+			checkCollisionH
 			drawAmy
-		while vf == 1 again
-	end
-;
 
-: drawAmy
-	i := amy
-	sprite x y 6
-;
+			gravity
+			drawAmy
+			checkCollisionH
+			checkCollisionV
+			
+			loop
+				vd := delay
+				if vd != 0 then again
+			vd := 2
+			delay := vd
+			drawAmy
+		again
 
-: gravity
-	dy += 1
-	v6 >>= dy
-	v6 >>= v6
-	y += v6
-;
+	;
 
-: drawBG
+	: checkCollisionH
+		if vf == 1 begin
+			drawAmy
+			x := prevX
+		end
 
-	i := main
-	v0 := 0
-	v1 := 20
-	loop
-		sprite v0 v1 8
-		v0 += 8
-	if v0 < 100 then again
 
-	i := gravity
-	v0 := 120
-	v1 := 50
-	loop
-		sprite v0 v1 8
-		v0 += -8
-	if v0 > 20 then again
-	v5 := 0
-	loop
-		v0 := random 0b11111111
-		v1 := random 0b11111111
+	: checkCollisionV
+		if vf == 1 begin
+			if dy == 0 then ;
+			temp := 1
+			if dy < 128 then temp := -1
+			if dy < 128 then hop := 1
+			dy := 0
+			
+			drawAmy
+			loop
+				drawAmy
+				y += temp
+				drawAmy
+			while vf == 1 again
+		end
+	;
+
+	: drawAmy
+		i := amy
+		sprite x y 6
+	;
+
+	: gravity
+		dy += 1
+		v6 >>= dy
+		v6 >>= v6
+		y += v6
+	;
+
+	: drawBG
+
 		i := main
-		v2 := random 0b00001111
-		i += v2
-		sprite v0 v1 5
-		v5 += 1
-	if v5 < 10 then again
+		v0 := 0
+		v1 := 20
+		loop
+			sprite v0 v1 8
+			v0 += 8
+		if v0 < 100 then again
+
+		i := gravity
+		v0 := 120
+		v1 := 50
+		loop
+			sprite v0 v1 8
+			v0 += -8
+		if v0 > 20 then again
+		v5 := 0
+		loop
+			v0 := random 0b11111111
+			v1 := random 0b11111111
+			i := main
+			v2 := random 0b00001111
+			i += v2
+			sprite v0 v1 5
+			v5 += 1
+		if v5 < 10 then again
 
 
-;
+	;
 
 
-: amy
-0b111
-0b010
-0b111
-0b111
-0b101
-0b101
+	: amy
+	0b111
+	0b010
+	0b111
+	0b111
+	0b101
+	0b101
 
