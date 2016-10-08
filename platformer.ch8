@@ -1,120 +1,132 @@
-		:alias x v0
-		:alias y v1
-		:alias dx v2
-		:alias dy v3
-		:alias hop v8
-		:alias prevX v4
-		:alias temp v5
+				:alias x v0
+				:alias y v1
+				:alias dx v2
+				:alias dy v3
+				:alias hop v8
+				:alias prevX v4
+				:alias temp v5
 
-		: main
-			hires
-			drawBG
-			x := 0
-			y := 0
-			hop := 1
-			loop	
-				prevX := x
-				v2 := 5 
-				if v2 key then if hop == 1 begin
-					hop := 0
-					dy := -7
-				end
-				v2 := 7 if v2 key then x += -1
-				v2 := 9 if v2 key then x += 1
-
-				drawAmy
-				checkCollisionH
-				gravity
-				
-				loop
-					vd := delay
-					if vd != 0 then again
-				vd := 2
-				delay := vd
-				drawAmy
-			again
-
-		;
-
-		: checkCollisionH
-			if vf == 1 begin
-				drawAmy
-				x := prevX
-				drawAmy
-			end
-		;
-
-		: drawAmy
-			i := amy
-			sprite x y 6
-		;
-
-		: gravity
-			dy += 1
-
-			v6 >>= dy
-			#v6 := dy
-			temp := 1
-			if v6 == 0 then ;
-			if v6 < 128 then temp := -1
-			
-			#collide slowly
-			#drawAmy
-				
-			loop	
-				drawAmy
-				v6 += temp
-				y -= temp
-				drawAmy
-				if vf != 0 begin
+				: main
+					hires
+					drawBG
+					x := 0
+					y := 0
 					hop := 1
-					dy := 0
-					drawAmy
-					y += temp
-					drawAmy
-					;
-				end
-			if v6 != 0 then again
-			end
-		;
+					loop	
+						prevX := x
+						v2 := 5 
+						if v2 key then if hop == 1 begin
+							hop := 0
+							dy := -18
+						end
+						v2 := 7 if v2 key then x += -1
+						v2 := 9 if v2 key then x += 1
 
-		: drawBG
+						drawAmy
+						checkCollisionH
+						gravity
+						
+						loop
+							vd := delay
+							if vd != 0 then again
+						vd := 3
+						delay := vd
+						drawAmy
+					again
 
-			i := main
-			v0 := 0
-			v1 := 20
-			loop
-				sprite v0 v1 8
-				v0 += 8
-			if v0 < 100 then again
+				;
 
-			i := gravity
-			v0 := 120
-			v1 := 50
-			loop
-				sprite v0 v1 8
-				v0 += -8
-			if v0 > 20 then again
-			v5 := 0
-			loop
-				v0 := random 0b11111111
-				v1 := random 0b11111111
-				i := main
-				v2 := random 0b00001111
-				i += v2
-				sprite v0 v1 5
-				v5 += 1
-			if v5 < 2 then again
+				: checkCollisionH
+					if vf == 1 begin
+						drawAmy
+						x := prevX
+						drawAmy
+					end
+				;
+
+				: drawAmy
+					i := amy
+					sprite x y 6
+				;
+
+				: gravity
+					dy += 3
+
+					#v6 := dy
+					temp := 1
+				
+					if dy < 128 begin
+						temp := -1
+						v6 >>= dy 
+						v6 >>= v6
+					end 
+
+					if dy > 128 begin
+						temp := 1
+						v6 >>= dy
+						v6 >>= v6
+						v6 += 0b11000000
+
+					end
+					
+					if v6 == 0 then ;
+
+					#collide slowly
+					#drawAmy
+						
+					loop	
+						drawAmy
+						v6 += temp
+						y -= temp
+						drawAmy
+						if vf != 0 begin
+							if temp == -1 then hop := 1
+							dy := 0
+							drawAmy
+							y += temp
+							drawAmy
+							;
+						end
+					if v6 != 0 then again
+				;
+
+				: drawBG
+
+					i := main
+					v0 := 0
+					v1 := 22
+					loop
+						sprite v0 v1 8
+						v0 += 8
+					if v0 < 100 then again
+
+					i := gravity
+					v0 := 120
+					v1 := 50
+					loop
+						sprite v0 v1 8
+						v0 += -8
+					if v0 > 20 then again
+					v5 := 0
+					loop
+						v0 := random 0b11111111
+						v1 := random 0b11111111
+						i := main
+						v2 := random 0b00001111
+						i += v2
+						sprite v0 v1 5
+						v5 += 1
+					if v5 < 9 then again
 
 
-		;
+				;
 
 
-		: amy
-		0b111
-		0b010
-		0b111
-		0b111
-		0b101
-		0b101
+				: amy
+				0b111
+				0b010
+				0b111
+				0b111
+				0b101
+				0b101
 
