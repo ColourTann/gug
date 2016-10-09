@@ -5,21 +5,18 @@
 				:alias hop v8
 				:alias prevX v4
 				:alias temp v5
-				:alias ticker vb
 				:alias bgTicker vc
 				:alias bgx v9
 				:alias bgy va
 				: main
 					hires
-					drawBG
-					scroll
+					#scroll
+					#scroll
 					x := 0
 					y := 0
 					hop := 1
 					loop
-						ticker += 1
-						if ticker == 100 begin
-							ticker := 0
+						if y > 30 begin
 							scroll
 						end
 							
@@ -111,6 +108,8 @@
 				: drawBG
 
 					i := main
+					temp := random 0b0001111
+					i += temp
 					temp := 0
 					bgx := 0
 					if bgTicker == 1 then bgx := 16
@@ -128,7 +127,7 @@
 						bgTicker := 0
 					end
 				;
-				
+
 				: amy
 				0b111
 				0b010
