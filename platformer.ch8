@@ -1,138 +1,153 @@
-				:alias x v0
-				:alias y v1
-				:alias dx v2
-				:alias dy v3
-				:alias hop v8
-				:alias prevX v4
-				:alias temp v5
-				:alias bgTicker vc
-				:alias bgx v9
-				:alias bgy va
-				: main
-					hires
-					#scroll
-					#scroll
-					x := 0
-					y := 0
-					hop := 1
-					loop
-						if y > 30 begin
-							scroll
-						end
-							
-						prevX := x
-						v2 := 5 
-						if v2 key then if hop == 1 begin
-							hop := 0
-							dy := -18
-						end
-						v2 := 7 if v2 key then x += -1
-						v2 := 9 if v2 key then x += 1
+:const jumpHeight -15
+:const gravityStrength 2
 
-						drawAmy
-						checkCollisionH
-						gravity
-						
-						loop
-							vd := delay
-							if vd != 0 then again
-						vd := 3
-						delay := vd
-						drawAmy
-					again
+:alias playerX v0
+:alias playerY v1
+:alias dx v2
+:alias dy v3
+:alias prevX v4
+:alias temp v5
+:alias partialDY v6
+:alias jumpAvailable v7
+:alias bgx v8
+:alias bgy v9
+:alias bgTicker va
 
-				;
+: main
+	hires
+	loop
+		checkScrolling
+		input
+		drawAmy 
+		checkCollisionH 
+		gravity
+		checkCollisionV
+		delayFPS
+		drawAmy
+	again
+;
 
-				: scroll
-					scroll-up 15
-					y += -15
-					scroll-up 15
-					y += -15
-					drawBG
-				;
+: checkScrolling
+	# when player gets too far down, scroll up and draw more level 
+	if playerY > 30 begin
+		scroll
+	end
+;
 
-				: checkCollisionH
-					if vf == 1 begin
-						drawAmy
-						x := prevX
-						drawAmy
-					end
-				;
+: input
+	# store the previous x position in case of collision
+	prevX := playerX
+	temp := 5 
+	if temp key then if jumpAvailable == 1 begin
+		jumpAvailable := 0
+		dy := jumpHeight
+	end
+	temp := 7 if temp key then playerX += -1
+	temp := 9 if temp key then playerX += 1
+;
 
-				: drawAmy
-					i := amy
-					sprite x y 6
-				;
+: drawAmy
+	i := amy
+	sprite playerX playerY 6
+;
 
-				: gravity
-					dy += 3
+: checkCollisionH
+	if vf == 1 begin
+		drawAmy
+		playerX := prevX
+		drawAmy
+	end
+;
 
-					#v6 := dy
-					temp := 1
-				
-					if dy < 128 begin
-						temp := -1
-						v6 >>= dy 
-						v6 >>= v6
-					end 
+: gravity
+	dy += gravityStrength
+;
 
-					if dy > 128 begin
-						temp := 1
-						v6 >>= dy
-						v6 >>= v6
-						v6 += 0b11000000
+: checkCollisionV
+	# temp is the direction the player is traveling
 
-					end
-					
-					if v6 == 0 then ;
+	# partialDY is shifted right twice from actual DY.
+	# partialDY is what's actually used to calculate the new position.
+	# this is so dy can be increased or decreased more finely
+	# might want to do that same with playerY also?
 
-					#collide slowly
-					#drawAmy
-						
-					loop	
-						drawAmy
-						v6 += temp
-						y -= temp
-						drawAmy
-						if vf != 0 begin
-							if temp == -1 then hop := 1
-							dy := 0
-							drawAmy
-							y += temp
-							drawAmy
-							;
-						end
-					if v6 != 0 then again
-				;
+	# < 128 is (probably) positive and > 128 is (probably) negative
 
-				: drawBG
+	if dy < 128 begin
+		temp := 1
+		partialDY >>= dy 
+		partialDY >>= partialDY
+	end 
 
-					i := main
-					temp := random 0b0001111
-					i += temp
-					temp := 0
-					bgx := 0
-					if bgTicker == 1 then bgx := 16
-					
-					bgy := 54
-					loop
-						sprite bgx bgy 8
-						bgx += 8
-						temp += 1
-					if temp < 14 then again
+	if dy > 128 begin
+		temp := -1
+		partialDY >>= dy
+		partialDY >>= partialDY
+		partialDY += 0b11000000
+	end
+	
+	if partialDY == 0 then return
 
-					if bgTicker == 0 begin
-						bgTicker := 1
-					else  
-						bgTicker := 0
-					end
-				;
+	# collide slowly-
+	# undraw amy, redraw amy one pixel in the y direction and see if she collides
+	# if she ever does, revert back one position and exit
+	
+	loop	
+		drawAmy
+		partialDY -= temp
+		playerY += temp
+		drawAmy
+		if vf != 0 begin
+			if temp == 1 then jumpAvailable := 1
+			dy := 0
+			drawAmy
+			playerY -= temp
+			drawAmy
+			return
+		end
+	if partialDY != 0 then again
+;
 
-				: amy
-				0b111
-				0b010
-				0b111
-				0b111
-				0b101
-				0b101
+: delayFPS
+	# delay loop to lock framerate and prevent flicker
+	loop
+		temp := delay
+		if temp != 0 then again
+	temp := 3
+	delay := temp
+;
+
+: scroll
+	playerY += -30
+	scroll-up 15
+	scroll-up 15
+	drawBG
+;
+
+: drawBG
+	# drawing pixels to walk on!
+	i := main
+	temp := random 0b0001111
+	i += temp
+	temp := 0
+	bgx := 0
+	if bgTicker == 1 then bgx := 16
+	bgy := 54
+	loop
+		sprite bgx bgy 8
+		bgx += 8
+		temp += 1
+	if temp < 14 then again
+	temp := bgTicker
+	bgTicker := 1
+	bgTicker -= temp
+;
+
+: amy
+0b111
+0b010
+0b111
+0b111
+0b101
+0b101
 
