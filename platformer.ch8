@@ -5,14 +5,24 @@
 				:alias hop v8
 				:alias prevX v4
 				:alias temp v5
-
+				:alias ticker vb
+				:alias bgTicker vc
+				:alias bgx v9
+				:alias bgy va
 				: main
 					hires
 					drawBG
+					scroll
 					x := 0
 					y := 0
 					hop := 1
-					loop	
+					loop
+						ticker += 1
+						if ticker == 100 begin
+							ticker := 0
+							scroll
+						end
+							
 						prevX := x
 						v2 := 5 
 						if v2 key then if hop == 1 begin
@@ -34,6 +44,14 @@
 						drawAmy
 					again
 
+				;
+
+				: scroll
+					scroll-up 15
+					y += -15
+					scroll-up 15
+					y += -15
+					drawBG
 				;
 
 				: checkCollisionH
@@ -93,35 +111,24 @@
 				: drawBG
 
 					i := main
-					v0 := 0
-					v1 := 22
+					temp := 0
+					bgx := 0
+					if bgTicker == 1 then bgx := 16
+					
+					bgy := 54
 					loop
-						sprite v0 v1 8
-						v0 += 8
-					if v0 < 100 then again
+						sprite bgx bgy 8
+						bgx += 8
+						temp += 1
+					if temp < 14 then again
 
-					i := gravity
-					v0 := 120
-					v1 := 50
-					loop
-						sprite v0 v1 8
-						v0 += -8
-					if v0 > 20 then again
-					v5 := 0
-					loop
-						v0 := random 0b11111111
-						v1 := random 0b11111111
-						i := main
-						v2 := random 0b00001111
-						i += v2
-						sprite v0 v1 5
-						v5 += 1
-					if v5 < 9 then again
-
-
+					if bgTicker == 0 begin
+						bgTicker := 1
+					else  
+						bgTicker := 0
+					end
 				;
-
-
+				
 				: amy
 				0b111
 				0b010
