@@ -1,5 +1,5 @@
-:const jumpHeight -15
-:const gravityStrength 2
+:const c_jumpHeight      -15
+:const c_gravityStrength  2
 
 :alias a_temp      vd
 :alias a_partialDY v7
@@ -56,7 +56,7 @@
 	a_temp := 5
 	if a_temp key then if a_playerJumpAvailable == 1 begin
 		a_playerJumpAvailable := 0
-    a_playerSpeedY := jumpHeight
+    a_playerSpeedY := c_jumpHeight
 	end
 	a_temp := 7 if a_temp key then a_playerX += -1
 	a_temp := 9 if a_temp key then a_playerX += 1
@@ -76,7 +76,7 @@
 ;
 
 : gravity
-	a_playerSpeedY += gravityStrength
+	a_playerSpeedY += c_gravityStrength
 ;
 
 : checkCollisionV
