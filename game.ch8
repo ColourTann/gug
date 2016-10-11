@@ -1,17 +1,31 @@
 :const jumpHeight -15
 :const gravityStrength 2
 
-:alias playerX v0
-:alias playerY v1
-:alias dx v2
-:alias dy v3
-:alias prevX v4
-:alias temp v5
-:alias partialDY v6
-:alias jumpAvailable v7
-:alias bgx v8
-:alias bgy v9
-:alias bgTicker va
+:alias a_temp      vd
+:alias a_partialDY v7
+:alias a_bgx       v8
+:alias a_bgy       v9
+:alias a_bgTicker  va
+
+
+#################################
+#
+#  Player Data
+#
+
+:alias a_playerX             v0
+:alias a_playerY             v1
+:alias a_playerPrevX         v2
+:alias a_playerPrevY         v3
+:alias a_playerSpeedX        v4
+:alias a_playerSpeedY        v5
+:alias a_playerJumpAvailable v6
+
+
+#################################
+#
+#  Game Loop
+#
 
 : main
 	hires
@@ -29,64 +43,66 @@
 
 : checkScrolling
 	# when player gets too far down, scroll up and draw more level 
-	if playerY > 30 begin
+	if a_playerY > 30 begin
 		scroll
 	end
 ;
 
 : input
 	# store the previous x position in case of collision
-	prevX := playerX
-	temp := 5 
-	if temp key then if jumpAvailable == 1 begin
-		jumpAvailable := 0
-		dy := jumpHeight
+
+	a_playerPrevX := a_playerX
+
+	a_temp := 5
+	if a_temp key then if a_playerJumpAvailable == 1 begin
+		a_playerJumpAvailable := 0
+    a_playerSpeedY := jumpHeight
 	end
-	temp := 7 if temp key then playerX += -1
-	temp := 9 if temp key then playerX += 1
+	a_temp := 7 if a_temp key then a_playerX += -1
+	a_temp := 9 if a_temp key then a_playerX += 1
 ;
 
 : drawAmy
 	i := amy
-	sprite playerX playerY 6
+	sprite a_playerX a_playerY 6
 ;
 
 : checkCollisionH
 	if vf == 1 begin
 		drawAmy
-		playerX := prevX
+		a_playerX := a_playerPrevX
 		drawAmy
 	end
 ;
 
 : gravity
-	dy += gravityStrength
+	a_playerSpeedY += gravityStrength
 ;
 
 : checkCollisionV
-	# temp is the direction the player is traveling
+	# a_temp is the direction the player is traveling
 
-	# partialDY is shifted right twice from actual DY.
-	# partialDY is what's actually used to calculate the new position.
+	# a_partialDY is shifted right twice from actual DY.
+	# a_partialDY is what's actually used to calculate the new position.
 	# this is so dy can be increased or decreased more finely
-	# might want to do that same with playerY also?
+	# might want to do that same with a_playerY also?
 
 	# < 128 is (probably) positive and > 128 is (probably) negative
 
-	if dy < 128 begin
-		temp := 1
-		partialDY >>= dy 
-		partialDY >>= partialDY
+	if a_playerSpeedY < 128 begin
+		a_temp := 1
+		a_partialDY >>= a_playerSpeedY
+		a_partialDY >>= a_partialDY
 	end 
 
-	if dy > 128 begin
-		temp := -1
-		partialDY >>= dy
-		partialDY >>= partialDY
-		partialDY += 0b11000000
+	if a_playerSpeedY > 128 begin
+		a_temp := -1
+		a_partialDY >>= a_playerSpeedY
+		a_partialDY >>= a_partialDY
+		a_partialDY += 0b11000000
 	end
 	
-	if partialDY == 0 then return
+	if a_partialDY == 0 then return
 
 	# collide slowly-
 	# undraw amy, redraw amy one pixel in the y direction and see if she collides
@@ -94,31 +110,31 @@
 	
 	loop	
 		drawAmy
-		partialDY -= temp
-		playerY += temp
+		a_partialDY -= a_temp
+		a_playerY += a_temp
 		drawAmy
 		if vf != 0 begin
-			if temp == 1 then jumpAvailable := 1
-			dy := 0
+			if a_temp == 1 then a_playerJumpAvailable := 1
+			a_playerSpeedY := 0
 			drawAmy
-			playerY -= temp
+			a_playerY -= a_temp
 			drawAmy
 			return
 		end
-	if partialDY != 0 then again
+	if a_partialDY != 0 then again
 ;
 
 : delayFPS
 	# delay loop to lock framerate and prevent flicker
 	loop
-		temp := delay
-		if temp != 0 then again
-	temp := 3
-	delay := temp
+		a_temp := delay
+		if a_temp != 0 then again
+	a_temp := 3
+	delay := a_temp
 ;
 
 : scroll
-	playerY += -30
+	a_playerY += -30
 	scroll-up 15
 	scroll-up 15
 	drawBG
@@ -127,20 +143,20 @@
 : drawBG
 	# drawing pixels to walk on!
 	i := main
-	temp := random 0b0001111
-	i += temp
-	temp := 0
-	bgx := 0
-	if bgTicker == 1 then bgx := 16
-	bgy := 54
+	a_temp := random 0b0001111
+	i += a_temp
+	a_temp := 0
+	a_bgx := 0
+	if a_bgTicker == 1 then a_bgx := 16
+	a_bgy := 54
 	loop
-		sprite bgx bgy 8
-		bgx += 8
-		temp += 1
-	if temp < 14 then again
-	temp := bgTicker
-	bgTicker := 1
-	bgTicker -= temp
+		sprite a_bgx a_bgy 8
+		a_bgx += 8
+		a_temp += 1
+	if a_temp < 14 then again
+	a_temp := a_bgTicker
+	a_bgTicker := 1
+	a_bgTicker -= a_temp
 ;
 
 : amy
