@@ -1,0 +1,13 @@
+{
+"tickrate":"1000",
+"fillColor":"#6b370a",
+"fillColor2":"#284720",
+"blendColor":"#91742b",
+"backgroundColor":"#0f1314",
+"buzzColor":"#284720",
+"quietColor":"#91742b",
+"shiftQuirks":false,
+"loadStoreQuirks":false,
+"vfOrderQuirks":false,
+"enableXO":true
+}
