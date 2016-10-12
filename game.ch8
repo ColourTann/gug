@@ -1,4 +1,6 @@
 :const c_jumpHeight      -15
+:const c_maxSpeedLeft    -2
+:const c_maxSpeedRight    2
 :const c_gravityStrength  2
 
 :alias a_temp      vd
@@ -124,14 +126,37 @@
 	# store the previous x position in case of collision
 	a_playerPrevX := a_playerX
 
-	a_temp := 5
+	a_temp := 5 # W
 	if a_temp key then if a_playerJumpAvailable == 1 begin
 		a_playerJumpAvailable := 0
     a_playerSpeedY := c_jumpHeight
 	end
-	a_temp := 7 if a_temp key then a_playerX += -1
-	a_temp := 9 if a_temp key then a_playerX += 1
 
+: j_input_left
+	a_temp := 7 # A
+	if a_temp -key then jump j_input_right
+	a_playerSpeedX += -1
+	if a_playerSpeedX == -3 then a_playerSpeedX := c_maxSpeedLeft
+	jump j_input_apply
+
+: j_input_right
+	a_temp := 9 # D
+	if a_temp -key then jump j_input_none
+	a_playerSpeedX += 1
+	if a_playerSpeedX == 3 then a_playerSpeedX := c_maxSpeedRight
+	jump j_input_apply
+
+: j_input_none
+	# if neither left or right are pressed, slow down
+	if a_playerSpeedX == -2 then a_playerSpeedX := -1
+	if a_playerSpeedX == -1 then a_playerSpeedX := 0
+	if a_playerSpeedX ==  2 then a_playerSpeedX := 1
+	if a_playerSpeedX ==  1 then a_playerSpeedX := 0
+
+: j_input_apply
+	a_playerX += a_playerSpeedX
+
+: j_input_save
 	i := player
 	save v6
 	pop
