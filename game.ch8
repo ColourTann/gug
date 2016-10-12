@@ -167,3 +167,72 @@
 0b101
 0b101
 
+
+#################################
+#
+#  stack
+#   (don't touch this)
+#
+
+:const stacklimit 196             # this should be a multiple of 14
+
+: stack-pointer
+	0 0
+
+: stack
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+: stack-buffer                     # catch a potential stack overflow
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+: push
+	i := stack-pointer
+	load ve - ve
+
+	# don't overflow the stack
+	if ve == stacklimit begin
+		:breakpoint warning-stack-overflow
+		return
+	end
+
+	i := stack
+	i += ve
+	save v0 - vd
+
+	# increment the stack pointer
+	ve += 14
+	i := stack-pointer
+	save ve - ve
+;
+
+: pop
+	i := stack-pointer
+	load ve - ve
+
+  # if the stack pointer is 0 there is nothing to pop
+	if ve == 0 begin
+		:breakpoint warning-stack-underflow
+		return
+	end
+
+	# decrement the stack pointer
+	ve += -14
+	save ve - ve
+
+	i := stack
+	i += ve
+	load v0 - vd
+;
