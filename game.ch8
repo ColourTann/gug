@@ -1,9 +1,13 @@
 :const c_jumpHeight      -15
+:const c_maxSpeedLeft    -12
+:const c_maxSpeedRight    12
+:const c_runAccelerate    3
+:const c_airDecelerate    3
+:const c_groundDecelerate 6
 :const c_gravityStrength  2
 
 :alias a_temp      vd
 :alias a_counter   vc
-:alias a_partialDY v7
 
 
 #################################
@@ -124,14 +128,45 @@
 	# store the previous x position in case of collision
 	a_playerPrevX := a_playerX
 
-	a_temp := 5
+	a_temp := 5 # W
 	if a_temp key then if a_playerJumpAvailable == 1 begin
 		a_playerJumpAvailable := 0
     a_playerSpeedY := c_jumpHeight
 	end
-	a_temp := 7 if a_temp key then a_playerX += -1
-	a_temp := 9 if a_temp key then a_playerX += 1
 
+	va := c_runAccelerate
+: j_input_left
+	a_temp := 7 # A
+	if a_temp -key then jump j_input_right
+	a_playerSpeedX -= va
+	if a_playerSpeedX == -15 then a_playerSpeedX := c_maxSpeedLeft
+	jump j_input_save
+
+: j_input_right
+	a_temp := 9 # D
+	if a_temp -key then jump j_input_none
+	a_playerSpeedX += va
+	if a_playerSpeedX == 15 then a_playerSpeedX := c_maxSpeedRight
+	jump j_input_save
+
+: j_input_none
+	# if neither left or right are pressed, slow down
+	if a_playerSpeedX == 0  then jump j_input_save
+
+	va := c_groundDecelerate
+	vb := c_airDecelerate
+	if a_playerSpeedX < 128 begin
+		if a_playerJumpAvailable == 1 then a_playerSpeedX -= va
+		if a_playerJumpAvailable == 0 then a_playerSpeedX -= vb
+		if a_playerSpeedX > 128 then a_playerSpeedX := 0
+	end
+	if a_playerSpeedX > 128 begin
+		if a_playerJumpAvailable == 1 then a_playerSpeedX += va
+		if a_playerJumpAvailable == 0 then a_playerSpeedX += vb
+		if a_playerSpeedX < 128 then a_playerSpeedX := 0
+	end
+
+: j_input_save
 	i := player
 	save v6
 	pop
@@ -151,17 +186,47 @@
 ;
 
 : f_checkCollisionH
+	:alias a_partialDX v7
+
 	push
 	i := player
 	load v6
 
 	f_drawAmy
-	if vf == 1 begin
-		f_drawAmy
-		a_playerX := a_playerPrevX
-		f_drawAmy
+
+	# collide slowly
+	#   undraw amy, redraw amy one pixel in the x direction and see if she
+	#   collides. if she ever does, revert back one position and exit.
+	if a_playerSpeedX < 128 begin
+		a_temp :=  1
+		a_partialDX >>= a_playerSpeedX
+		a_partialDX >>= a_partialDX
 	end
 
+	if a_playerSpeedX > 128 begin
+		a_temp := -1
+		a_partialDX >>= a_playerSpeedX
+		a_partialDX >>= a_partialDX
+		a_partialDX += 0b11000000
+	end
+
+	if a_partialDX == 0 then jump j_checkCollisionH_return
+
+	loop	
+		f_drawAmy # undraw
+		a_partialDX -= a_temp
+		a_playerX += a_temp
+		f_drawAmy # redraw
+		if vf != 0 begin
+			a_playerSpeedX := 0
+			f_drawAmy
+			a_playerX -= a_temp
+			f_drawAmy
+			jump j_checkCollisionH_return
+		end
+	if a_partialDX != 0 then again
+
+: j_checkCollisionH_return
 	i := player
 	save v6
 	pop
@@ -180,6 +245,8 @@
 ;
 
 : f_checkCollisionV
+	:alias a_partialDY v7
+
 	push
 	i := player
 	load v6
