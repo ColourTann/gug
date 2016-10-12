@@ -1,7 +1,8 @@
-:const c_jumpHeight      -15
+:const c_jumpHeight      -17
 :const c_gravityStrength  2
 
 :alias a_temp      vd
+:alias a_counter   vc
 :alias a_partialDY v7
 
 
