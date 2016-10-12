@@ -137,24 +137,20 @@
 	if a_temp -key then jump j_input_right
 	a_playerSpeedX += -1
 	if a_playerSpeedX == -3 then a_playerSpeedX := c_maxSpeedLeft
-	jump j_input_apply
+	jump j_input_save
 
 : j_input_right
 	a_temp := 9 # D
 	if a_temp -key then jump j_input_none
 	a_playerSpeedX += 1
 	if a_playerSpeedX == 3 then a_playerSpeedX := c_maxSpeedRight
-	jump j_input_apply
+	jump j_input_save
 
 : j_input_none
 	# if neither left or right are pressed, slow down
-	if a_playerSpeedX == -2 then a_playerSpeedX := -1
-	if a_playerSpeedX == -1 then a_playerSpeedX := 0
-	if a_playerSpeedX ==  2 then a_playerSpeedX := 1
-	if a_playerSpeedX ==  1 then a_playerSpeedX := 0
-
-: j_input_apply
-	a_playerX += a_playerSpeedX
+	if a_playerSpeedX == 0  then jump j_input_save
+	if a_playerSpeedX < 128 then a_playerSpeedX += -1
+	if a_playerSpeedX > 128 then a_playerSpeedX +=  1
 
 : j_input_save
 	i := player
@@ -181,12 +177,30 @@
 	load v6
 
 	f_drawAmy
-	if vf == 1 begin
-		f_drawAmy
-		a_playerX := a_playerPrevX
-		f_drawAmy
-	end
+	if a_playerSpeedX == 0 then jump j_checkCollisionH_return
 
+	# collide slowly
+	#   undraw amy, redraw amy one pixel in the x direction and see if she
+	#   collides. if she ever does, revert back one position and exit.
+	if a_playerSpeedX < 128 then a_temp :=  1
+	if a_playerSpeedX > 128 then a_temp := -1
+
+	v7 := a_playerSpeedX
+	loop	
+		f_drawAmy # undraw
+		v7 -= a_temp
+		a_playerX += a_temp
+		f_drawAmy # redraw
+		if vf != 0 begin
+			a_playerSpeedX := 0
+			f_drawAmy
+			a_playerX -= a_temp
+			f_drawAmy
+			jump j_checkCollisionH_return
+		end
+	if v7 != 0 then again
+
+: j_checkCollisionH_return
 	i := player
 	save v6
 	pop
