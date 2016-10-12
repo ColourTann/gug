@@ -30,25 +30,25 @@
 : main
 	hires
 	loop
-		checkScrolling
-		input
-		drawAmy 
-		checkCollisionH 
-		gravity
-		checkCollisionV
-		delayFPS
-		drawAmy
+		f_checkScrolling
+		f_input
+		f_drawAmy
+		f_checkCollisionH
+		f_gravity
+		f_checkCollisionV
+		f_delayFPS
+		f_drawAmy
 	again
 ;
 
-: checkScrolling
+: f_checkScrolling
 	# when player gets too far down, scroll up and draw more level 
 	if a_playerY > 30 begin
-		scroll
+		f_scroll
 	end
 ;
 
-: input
+: f_input
 	# store the previous x position in case of collision
 
 	a_playerPrevX := a_playerX
@@ -62,24 +62,24 @@
 	a_temp := 9 if a_temp key then a_playerX += 1
 ;
 
-: drawAmy
+: f_drawAmy
 	i := amy
 	sprite a_playerX a_playerY 6
 ;
 
-: checkCollisionH
+: f_checkCollisionH
 	if vf == 1 begin
-		drawAmy
+		f_drawAmy
 		a_playerX := a_playerPrevX
-		drawAmy
+		f_drawAmy
 	end
 ;
 
-: gravity
+: f_gravity
 	a_playerSpeedY += c_gravityStrength
 ;
 
-: checkCollisionV
+: f_checkCollisionV
 	# a_temp is the direction the player is traveling
 
 	# a_partialDY is shifted right twice from actual DY.
@@ -109,22 +109,22 @@
 	# if she ever does, revert back one position and exit
 	
 	loop	
-		drawAmy
+		f_drawAmy
 		a_partialDY -= a_temp
 		a_playerY += a_temp
-		drawAmy
+		f_drawAmy
 		if vf != 0 begin
 			if a_temp == 1 then a_playerJumpAvailable := 1
 			a_playerSpeedY := 0
-			drawAmy
+			f_drawAmy
 			a_playerY -= a_temp
-			drawAmy
+			f_drawAmy
 			return
 		end
 	if a_partialDY != 0 then again
 ;
 
-: delayFPS
+: f_delayFPS
 	# delay loop to lock framerate and prevent flicker
 	loop
 		a_temp := delay
@@ -133,14 +133,14 @@
 	delay := a_temp
 ;
 
-: scroll
+: f_scroll
 	a_playerY += -30
 	scroll-up 15
 	scroll-up 15
-	drawBG
+	f_drawBG
 ;
 
-: drawBG
+: f_drawBG
 	# drawing pixels to walk on!
 	i := main
 	a_temp := random 0b0001111
