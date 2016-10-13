@@ -1,10 +1,11 @@
-:const c_jumpHeight      -15
-:const c_maxSpeedLeft    -12
-:const c_maxSpeedRight    12
-:const c_runAccelerate    3
-:const c_airDecelerate    3
-:const c_groundDecelerate 6
-:const c_gravityStrength  2
+:const c_jumpHeight       -14
+:const c_doubleJumpHeight -8
+:const c_maxSpeedLeft     -8
+:const c_maxSpeedRight     8
+:const c_runAccelerate     4
+:const c_airDecelerate     4
+:const c_groundDecelerate  4
+:const c_gravityStrength   2
 
 :alias a_temp      vd
 :alias a_counter   vc
@@ -73,6 +74,18 @@
 
 #################################
 #
+#  Input Data
+#
+
+: jumpKeyData
+: jumpKeyPressed
+	0
+: jumpKeyReleased
+	1
+
+
+#################################
+#
 #  Game Loop
 #
 
@@ -81,10 +94,10 @@
 	f_setup
 	loop
 		f_checkScrolling
-		f_input
-		f_checkCollisionH
 		f_gravity
 		f_checkCollisionV
+		f_input
+		f_checkCollisionH
 		f_delayFPS
 
 		# undraw player before next movement
@@ -131,25 +144,45 @@
 	# store the previous x position in case of collision
 	a_playerPrevX := a_playerX
 
+: j_input_jump
 	a_temp := 5 # W
-	if a_temp key then if a_playerJumpAvailable == 1 begin
-		a_playerJumpAvailable := 0
-    a_playerSpeedY := c_jumpHeight
-	end
+	if a_temp -key then jump j_input_jumpRelease
+	if a_playerJumpAvailable == 0 then jump j_input_left
+	if a_playerJumpAvailable == 1 then jump j_input_doubleJump
 
-	va := c_runAccelerate
+	# if player has both jumps left...
+	a_playerJumpAvailable := 1
+	a_playerSpeedY := c_jumpHeight
+	f_jumpKeyPressed
+	jump j_input_left
+
+: j_input_doubleJump
+	# don't double jump unless the jump key has been released
+	i := jumpKeyReleased
+	load va - va
+	if va == 0 then jump j_input_left
+
+	a_playerJumpAvailable := 0
+	a_playerSpeedY := c_doubleJumpHeight
+	f_jumpKeyPressed
+	jump j_input_left
+
+: j_input_jumpRelease
+	f_jumpKeyReleased
+
 : j_input_left
+	va := c_runAccelerate
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
 	a_playerSpeedX -= va
-	if a_playerSpeedX == -15 then a_playerSpeedX := c_maxSpeedLeft
+	if a_playerSpeedX == -12 then a_playerSpeedX := c_maxSpeedLeft
 	jump j_input_save
 
 : j_input_right
 	a_temp := 9 # D
 	if a_temp -key then jump j_input_none
 	a_playerSpeedX += va
-	if a_playerSpeedX == 15 then a_playerSpeedX := c_maxSpeedRight
+	if a_playerSpeedX == 12 then a_playerSpeedX := c_maxSpeedRight
 	jump j_input_save
 
 : j_input_none
@@ -159,19 +192,47 @@
 	va := c_groundDecelerate
 	vb := c_airDecelerate
 	if a_playerSpeedX < 128 begin
-		if a_playerJumpAvailable == 1 then a_playerSpeedX -= va
-		if a_playerJumpAvailable == 0 then a_playerSpeedX -= vb
+		if a_playerJumpAvailable == 2 then a_playerSpeedX -= va
+		if a_playerJumpAvailable != 2 then a_playerSpeedX -= vb
 		if a_playerSpeedX > 128 then a_playerSpeedX := 0
 	end
 	if a_playerSpeedX > 128 begin
-		if a_playerJumpAvailable == 1 then a_playerSpeedX += va
-		if a_playerJumpAvailable == 0 then a_playerSpeedX += vb
+		if a_playerJumpAvailable == 2 then a_playerSpeedX += va
+		if a_playerJumpAvailable != 2 then a_playerSpeedX += vb
 		if a_playerSpeedX < 128 then a_playerSpeedX := 0
 	end
 
 : j_input_save
 	i := player
 	save v6
+	pop
+;
+
+: f_jumpKeyPressed
+	push
+
+	v0 := 1
+	v1 := 0
+	i  := jumpKeyData
+	save v1
+
+	pop
+;
+
+: f_jumpKeyReleased
+	push
+
+	i := jumpKeyData
+	load v1
+
+	if v0 != 1 then jump f_jumpKeyReleased_return
+
+	v0 := 0
+	v1 := 1
+	i := jumpKeyData
+	save v1
+
+: f_jumpKeyReleased_return
 	pop
 ;
 
@@ -194,8 +255,6 @@
 	push
 	i := player
 	load v6
-
-	f_drawAmy
 
 	# collide slowly
 	#   undraw amy, redraw amy one pixel in the x direction and see if she
@@ -257,7 +316,7 @@
 	if a_temp == -1 then va := -1
 
 	# only do stepping logic is player is on the ground
-	if a_playerJumpAvailable == 0 then jump j_checkStep_false
+	if a_playerJumpAvailable != 2 then jump j_checkStep_false
 
 	# draw dot on ground at player's foot
 	#   va differs based on direction to check left or right
@@ -307,6 +366,8 @@
 	i := player
 	load v6
 
+	f_drawAmy
+
 	# a_temp is the direction the player is traveling
 
 	# a_partialDY is shifted right twice from actual DY.
@@ -341,7 +402,7 @@
 		a_playerY += a_temp
 		f_drawAmy
 		if vf != 0 begin
-			if a_temp == 1 then a_playerJumpAvailable := 1
+			if a_temp == 1 then a_playerJumpAvailable := 2
 			a_playerSpeedY := 0
 			f_drawAmy
 			a_playerY -= a_temp
