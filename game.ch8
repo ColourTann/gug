@@ -56,6 +56,9 @@
 :alias a_mapIndex		v2
 :alias a_chunkLeftToDraw	v3
 
+: dot # used for single pixel collisions
+	0b1
+
 : level
 : background
 : bgX
@@ -199,12 +202,14 @@
 	#   collides. if she ever does, revert back one position and exit.
 	if a_playerSpeedX < 128 begin
 		a_temp :=  1
+		va := 0
 		a_partialDX >>= a_playerSpeedX
 		a_partialDX >>= a_partialDX
 	end
 
 	if a_playerSpeedX > 128 begin
 		a_temp := -1
+		va := -1
 		a_partialDX >>= a_playerSpeedX
 		a_partialDX >>= a_partialDX
 		a_partialDX += 0b11000000
@@ -218,13 +223,60 @@
 		a_playerX += a_temp
 		f_drawAmy # redraw
 		if vf != 0 begin
-			a_playerSpeedX := 0
+			# undraw player
 			f_drawAmy
-			a_playerX -= a_temp
-			f_drawAmy
-			jump j_checkCollisionH_return
+
+			# only do stepping logic is player is on the ground
+			if a_playerJumpAvailable == 0 then jump j_checkCollision_stopPlayer
+
+			# draw dot on ground at player's foot
+			#   va differs based on direction to check left or right
+			v8 := a_playerX
+			v8 += va
+			v9 := a_playerY
+			v9 += 2
+			i  := dot
+			sprite v8 v9 1
+
+			if vf != 0 begin
+				# undraw dot
+				sprite v8 v9 1
+
+				# draw dot 1 higher
+				v9 += -1
+				sprite v8 v9 1
+
+				if vf != 0 begin
+					# undraw dot
+					sprite v8 v9 1
+
+					# the ground the player is walking into is two blocks high,
+					# don't step and force player back
+					jump j_checkCollision_stopPlayer
+				end
+
+				#undraw dot
+				sprite v8 v9 1
+
+				#redraw player 1 higher
+				a_playerY += -1
+				f_drawAmy
+			else
+				#undraw dot
+				sprite v8 v9 1
+
+				# player has hit a wall that does not connect to the ground,
+				# so force player back
+				jump j_checkCollision_stopPlayer
+			end
 		end
 	if a_partialDX != 0 then again
+	jump j_checkCollisionH_return
+
+: j_checkCollision_stopPlayer
+	a_playerSpeedX := 0
+	a_playerX -= a_temp
+	f_drawAmy
 
 : j_checkCollisionH_return
 	i := player
