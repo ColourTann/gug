@@ -94,10 +94,10 @@
 	f_setup
 	loop
 		f_checkScrolling
-		f_input
-		f_checkCollisionH
 		f_gravity
 		f_checkCollisionV
+		f_input
+		f_checkCollisionH
 		f_delayFPS
 
 		# undraw player before next movement
@@ -256,8 +256,6 @@
 	i := player
 	load v6
 
-	f_drawAmy
-
 	# collide slowly
 	#   undraw amy, redraw amy one pixel in the x direction and see if she
 	#   collides. if she ever does, revert back one position and exit.
@@ -367,6 +365,8 @@
 	push
 	i := player
 	load v6
+
+	f_drawAmy
 
 	# a_temp is the direction the player is traveling
 
