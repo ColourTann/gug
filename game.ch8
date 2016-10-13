@@ -73,6 +73,18 @@
 
 #################################
 #
+#  Input Data
+#
+
+: jumpKeyData
+: jumpKeyPressed
+	0
+: jumpKeyReleased
+	1
+
+
+#################################
+#
 #  Game Loop
 #
 
@@ -131,14 +143,20 @@
 	# store the previous x position in case of collision
 	a_playerPrevX := a_playerX
 
+: j_input_jump
 	a_temp := 5 # W
-	if a_temp key then if a_playerJumpAvailable == 1 begin
-		a_playerJumpAvailable := 0
-    a_playerSpeedY := c_jumpHeight
-	end
+	if a_temp -key then jump j_input_jumpRelease
+	if a_playerJumpAvailable != 1 then jump j_input_left
+	a_playerJumpAvailable := 0
+	a_playerSpeedY := c_jumpHeight
+	f_jumpKeyPressed
+	jump j_input_left
 
-	va := c_runAccelerate
+: j_input_jumpRelease
+	f_jumpKeyReleased
+
 : j_input_left
+	va := c_runAccelerate
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
 	a_playerSpeedX -= va
@@ -172,6 +190,34 @@
 : j_input_save
 	i := player
 	save v6
+	pop
+;
+
+: f_jumpKeyPressed
+	push
+
+	v0 := 1
+	v1 := 0
+	i  := jumpKeyData
+	save v1
+
+	pop
+;
+
+: f_jumpKeyReleased
+	push
+
+	i := jumpKeyData
+	load v1
+
+	if v0 != 1 then jump f_jumpKeyReleased_return
+
+	v0 := 0
+	v1 := 1
+	i := jumpKeyData
+	save v1
+
+: f_jumpKeyReleased_return
 	pop
 ;
 
