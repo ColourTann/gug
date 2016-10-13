@@ -1,9 +1,9 @@
 :const c_jumpHeight      -15
-:const c_maxSpeedLeft    -12
-:const c_maxSpeedRight    12
-:const c_runAccelerate    3
-:const c_airDecelerate    3
-:const c_groundDecelerate 6
+:const c_maxSpeedLeft    -8
+:const c_maxSpeedRight    8
+:const c_runAccelerate    4
+:const c_airDecelerate    4
+:const c_groundDecelerate 4
 :const c_gravityStrength  2
 
 :alias a_temp      vd
@@ -142,14 +142,14 @@
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
 	a_playerSpeedX -= va
-	if a_playerSpeedX == -15 then a_playerSpeedX := c_maxSpeedLeft
+	if a_playerSpeedX == -12 then a_playerSpeedX := c_maxSpeedLeft
 	jump j_input_save
 
 : j_input_right
 	a_temp := 9 # D
 	if a_temp -key then jump j_input_none
 	a_playerSpeedX += va
-	if a_playerSpeedX == 15 then a_playerSpeedX := c_maxSpeedRight
+	if a_playerSpeedX == 12 then a_playerSpeedX := c_maxSpeedRight
 	jump j_input_save
 
 : j_input_none
