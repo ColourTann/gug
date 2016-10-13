@@ -1,10 +1,11 @@
-:const c_jumpHeight      -15
-:const c_maxSpeedLeft    -8
-:const c_maxSpeedRight    8
-:const c_runAccelerate    4
-:const c_airDecelerate    4
-:const c_groundDecelerate 4
-:const c_gravityStrength  2
+:const c_jumpHeight       -14
+:const c_doubleJumpHeight -8
+:const c_maxSpeedLeft     -8
+:const c_maxSpeedRight     8
+:const c_runAccelerate     4
+:const c_airDecelerate     4
+:const c_groundDecelerate  4
+:const c_gravityStrength   2
 
 :alias a_temp      vd
 :alias a_counter   vc
@@ -162,7 +163,7 @@
 	if va == 0 then jump j_input_left
 
 	a_playerJumpAvailable := 0
-	a_playerSpeedY := c_jumpHeight
+	a_playerSpeedY := c_doubleJumpHeight
 	f_jumpKeyPressed
 	jump j_input_left
 
