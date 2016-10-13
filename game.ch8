@@ -19,8 +19,8 @@
 
 :alias a_playerX             v0
 :alias a_playerY             v1
-:alias a_playerPrevX         v2
-:alias a_playerPrevY         v3
+:alias a_playerDirection     v2
+:alias a_playerWild          v3
 :alias a_playerSpeedX        v4
 :alias a_playerSpeedY        v5
 :alias a_playerJumpAvailable v6
@@ -32,10 +32,11 @@
 : playerY
 	56
 
-: playerPrevCoords
-: playerPrevX
-	5
-: playerPrevY
+: playerDirection
+	# 0 for facing left, 1 for facing right
+	1
+: playerWild
+	# this space reserved for whatever is needed
 	0
 
 : playerSpeed
@@ -157,9 +158,6 @@
 	i := player
 	load v6
 
-	# store the previous x position in case of collision
-	a_playerPrevX := a_playerX
-
 : j_input_jump
 	a_temp := 5 # W
 	if a_temp -key then jump j_input_jumpRelease
@@ -197,6 +195,7 @@
 	a_temp := vb
 	a_temp -= va
 	if a_playerSpeedX == a_temp then a_playerSpeedX := vb
+	a_playerDirection := 0
 	jump j_input_save
 
 : j_input_right
@@ -206,6 +205,7 @@
 	a_temp := c_maxSpeed
 	a_temp += va
 	if a_playerSpeedX == a_temp then a_playerSpeedX := c_maxSpeed
+	a_playerDirection := 1
 	jump j_input_save
 
 : j_input_none
@@ -265,11 +265,6 @@
 : f_drawAmy
 	i := amy
 	sprite a_playerX a_playerY 3
-;
-
-: f_drawAmyPrev
-	i := amy
-	sprite a_playerPrevX a_playerPrevY 3
 ;
 
 : f_checkCollisionH
