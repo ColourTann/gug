@@ -464,44 +464,15 @@
 ;
 
 : f_selectChunk 
-
-	#TODO- replace with jump table! Is it possible?
-
-	if a_currentChunkEntrance == 0 begin # center
-		if a_currentChunkExit == 0 begin
-			i := long chunk_cc0
-		end
-		if a_currentChunkExit == 1 begin
-			i := long chunk_cl0
-		end
-		if a_currentChunkExit == 2 begin
-			i := long chunk_cr0
-		end
-	end
-
-	if a_currentChunkEntrance == 1 begin # left
-		if a_currentChunkExit == 0 begin
-			i := long chunk_lc0
-		end
-		if a_currentChunkExit == 1 begin
-			i := long chunk_ll0
-		end
-		if a_currentChunkExit == 2 begin
-			i := long chunk_lr0
-		end
-	end
-
-	if a_currentChunkEntrance == 2 begin # right
-		if a_currentChunkExit == 0 begin
-			i := long chunk_rc0
-		end
-		if a_currentChunkExit == 1 begin
-			i := long chunk_rl0
-		end
-		if a_currentChunkExit == 2 begin
-			i := long chunk_rr0
-		end
-	end
+	v0 := a_currentChunkEntrance
+ 	v0 <<= v0
+ 	v0 <<= v0
+ 	v0 += a_currentChunkExit
+ 	v0 <<= v0
+ 	v0 += a_currentChunkExit
+ 	v0 += a_currentChunkEntrance
+ 	v0 <<= v0
+ 	jump0 chunks
 ;
 
 : f_drawMap
@@ -716,6 +687,18 @@
 #
 
 
+: chunks
+	i := long chunk_cc0 ;
+	i := long chunk_cl0 ;
+	i := long chunk_cr0 ;
+
+	i := long chunk_lc0 ;
+	i := long chunk_ll0 ;
+	i := long chunk_lr0 ;
+
+	i := long chunk_rc0 ;
+	i := long chunk_rl0 ;
+	i := long chunk_rr0 ;
 
 
 
