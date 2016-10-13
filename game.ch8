@@ -146,7 +146,21 @@
 : j_input_jump
 	a_temp := 5 # W
 	if a_temp -key then jump j_input_jumpRelease
-	if a_playerJumpAvailable != 1 then jump j_input_left
+	if a_playerJumpAvailable == 0 then jump j_input_left
+	if a_playerJumpAvailable == 1 then jump j_input_doubleJump
+
+	# if player has both jumps left...
+	a_playerJumpAvailable := 1
+	a_playerSpeedY := c_jumpHeight
+	f_jumpKeyPressed
+	jump j_input_left
+
+: j_input_doubleJump
+	# don't double jump unless the jump key has been released
+	i := jumpKeyReleased
+	load va - va
+	if va == 0 then jump j_input_left
+
 	a_playerJumpAvailable := 0
 	a_playerSpeedY := c_jumpHeight
 	f_jumpKeyPressed
@@ -177,13 +191,13 @@
 	va := c_groundDecelerate
 	vb := c_airDecelerate
 	if a_playerSpeedX < 128 begin
-		if a_playerJumpAvailable == 1 then a_playerSpeedX -= va
-		if a_playerJumpAvailable == 0 then a_playerSpeedX -= vb
+		if a_playerJumpAvailable == 2 then a_playerSpeedX -= va
+		if a_playerJumpAvailable != 2 then a_playerSpeedX -= vb
 		if a_playerSpeedX > 128 then a_playerSpeedX := 0
 	end
 	if a_playerSpeedX > 128 begin
-		if a_playerJumpAvailable == 1 then a_playerSpeedX += va
-		if a_playerJumpAvailable == 0 then a_playerSpeedX += vb
+		if a_playerJumpAvailable == 2 then a_playerSpeedX += va
+		if a_playerJumpAvailable != 2 then a_playerSpeedX += vb
 		if a_playerSpeedX < 128 then a_playerSpeedX := 0
 	end
 
@@ -303,7 +317,7 @@
 	if a_temp == -1 then va := -1
 
 	# only do stepping logic is player is on the ground
-	if a_playerJumpAvailable == 0 then jump j_checkStep_false
+	if a_playerJumpAvailable != 2 then jump j_checkStep_false
 
 	# draw dot on ground at player's foot
 	#   va differs based on direction to check left or right
@@ -387,7 +401,7 @@
 		a_playerY += a_temp
 		f_drawAmy
 		if vf != 0 begin
-			if a_temp == 1 then a_playerJumpAvailable := 1
+			if a_temp == 1 then a_playerJumpAvailable := 2
 			a_playerSpeedY := 0
 			f_drawAmy
 			a_playerY -= a_temp
