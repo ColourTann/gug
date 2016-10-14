@@ -122,11 +122,6 @@
 : f_throwSpear
 	push
 
-	# set the spear cooldown
-	i  := spearCooldown
-	v0 := c_spearCooldown
-	save v0
-
 	# initialize a spear at the player's location
 	i := player
 	load a_playerX - a_playerDirection
@@ -149,12 +144,23 @@
 	a_spearSpeedY := c_spearInitialY
 	a_spearTimer  := c_spearTime
 
+	f_drawSpear
+	if vf != 1 then jump j_throwSpear_succeed
+	# if the spear would spawn in a wall, we can't throw it
+	f_drawSpear
+	jump j_throwSpear_fail
+
+: j_throwSpear_succeed
 	# save spear
 	i := spear1
 	save v5
 
-	f_drawSpear
+	# set the spear cooldown
+	i  := spearCooldown
+	v0 := c_spearCooldown
+	save v0
 
+: j_throwSpear_fail
 	pop
 ;
 
