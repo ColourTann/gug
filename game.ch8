@@ -51,6 +51,131 @@
 
 #################################
 #
+#  Spear Data
+#
+
+:const c_spearGravityStrength 1
+:const c_spearInitialX        5
+:const c_spearInitialY        -4
+:const c_spearCooldown        100 #  5 seconds @ 20 fps
+:const c_spearTime            200 # 10 seconds @ 20 fps
+
+:alias a_spearX      v0
+:alias a_spearY      v1
+:alias a_spearSpeedX v2
+:alias a_spearSpeedY v3
+:alias a_spearTimer  v4
+
+: spear
+	0b111
+
+: spearCount
+	0
+
+: spearCooldown
+	0
+
+: spear1
+: spear1Location
+: spear1X
+	0
+: spear1Y
+	0
+: spear1SpeedX
+	0
+: spear1SpeedY
+	0
+: spear1Timer
+	0
+
+: spear2
+: spear2Location
+: spear2X
+	0
+: spear2Y
+	0
+: spear2SpeedX
+	0
+: spear2SpeedY
+	0
+: spear2Timer
+	0
+
+: spear3
+: spear3Location
+: spear3X
+	0
+: spear3Y
+	0
+: spear3SpeedX
+	0
+: spear3SpeedY
+	0
+: spear3Timer
+	0
+
+: f_drawSpear
+	i := spear
+	sprite a_spearX a_spearY 1
+;
+
+: f_throwSpear
+	push
+
+	# set the spear cooldown
+	i  := spearCooldown
+	v0 := c_spearCooldown
+	save v0
+
+	# initialize a spear at the player's location
+	i := player
+	load a_playerX - a_playerDirection
+	va := a_playerX
+	vb := a_playerY
+	vc := a_playerDirection
+
+	if vc == 0 then va += -2
+	if vc == 1 then va +=  3
+
+	a_spearX := va
+	a_spearY := vb
+
+	# initialize spear speed
+	a_spearSpeedX := 0
+	a_temp := c_spearInitialX
+	if vc == 0 then a_spearSpeedX -= a_temp
+	if vc == 1 then a_spearSpeedX += a_temp
+
+	a_spearSpeedY := c_spearInitialY
+	a_spearTimer  := c_spearTime
+
+	# save spear
+	i := spear1
+	save v5
+
+	f_drawSpear
+
+	pop
+;
+
+: f_moveSpears
+	push
+	i := spear1
+	load v4
+
+	a_spearX += a_spearSpeedX
+	a_spearSpeedY += c_spearGravityStrength
+	a_spearY += a_spearSpeedY
+	f_drawSpear
+
+	i := spear1
+	save v4
+	pop
+;
+
+
+#################################
+#
 #  Level Data
 #
 
@@ -111,18 +236,14 @@
 	f_setup
 	loop
 		f_checkScrolling
+		f_moveSpears
 		f_gravity
 		f_checkCollisionV
 		f_input
 		f_checkCollisionH
+		f_tickCooldowns
 		f_delayFPS
-
-		# undraw player before next movement
-		#   this would be nicer if it could be easily moved into
-		#   the movement logic
-		i := player
-		load v2
-		f_drawAmy
+		f_clearSprites
 	again
 ;
 
@@ -157,6 +278,18 @@
 	push
 	i := player
 	load v6
+
+: j_input_spear
+	a_temp := 6 # E
+	if a_temp -key then jump j_input_jump
+
+	# don't throw a spear if it's still on cooldown
+	i := spearCooldown
+	load va - va
+	if va != 0 then jump j_input_jump
+
+	f_throwSpear
+	jump j_input_jump
 
 : j_input_jump
 	a_temp := 5 # W
@@ -435,6 +568,18 @@
 	pop
 ;
 
+: f_tickCooldowns
+	push
+
+	i := spearCooldown
+	load v0
+	if v0 != 0 then v0 += -1
+	i := spearCooldown
+	save v0
+
+	pop
+;
+
 : f_delayFPS
 	# delay loop to lock framerate and prevent flicker
 	loop
@@ -442,6 +587,17 @@
 		if vf != 0 then again
 	vf := 3
 	delay := vf
+;
+
+: f_clearSprites
+	# undraw all dynamic sprites before the screen scroll
+	i := player
+	load a_playerX - a_playerY
+	f_drawAmy
+
+	i := spear1
+	load a_spearX - a_spearY
+	f_drawSpear
 ;
 
 : f_scroll
