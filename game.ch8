@@ -158,13 +158,13 @@
 	pop
 ;
 
-: f_moveSpears
+: f_moveSpearsV
 	push
 	i := spear1
 	load v4
 
-	a_spearX += a_spearSpeedX
 	a_spearSpeedY += c_spearGravityStrength
+	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
 	a_spearY += a_spearSpeedY
 	f_drawSpear
 
@@ -236,7 +236,7 @@
 	f_setup
 	loop
 		f_checkScrolling
-		f_moveSpears
+		f_moveSpearsV
 		f_gravity
 		f_checkCollisionV
 		f_input
@@ -403,10 +403,10 @@
 : f_checkCollisionH
 	push
 
+	# check player collisions
 	i := player
 	load v6
 
-	# parameters for collision detection
 	v7 := a_playerX
 	v8 := a_playerY
 	v9 := a_playerSpeedX
@@ -419,6 +419,21 @@
 	i := player
 	save v6
 
+	# check spear collisions
+	i := spear1
+	load v4
+
+	v7 := a_spearX
+	v8 := a_spearY
+	v9 := a_spearSpeedX
+	va := 1
+	f_checkCollisionH_detectCollision
+
+	a_spearX := v7
+	a_spearY := v8
+	a_spearSpeedX := v9
+	i := spear1
+	save v4
 	pop
 ;
 
@@ -472,6 +487,9 @@
 	# sets vf to 1 if the player has hit a step, else sets vf to 0
 	# assumes player position is loaded into a_playerX and a_playerY and
 	# player direction is stored in a_temp
+
+	# don't bother with stepping for spears
+	if a_spriteTableOffset == 1 then jump j_checkCollisionH_checkStep_false
 
 	# store x-offset from player origin to check foot collision
 	#   (based on direction player is moving)
