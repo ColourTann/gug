@@ -31,8 +31,6 @@ public class ImagePack {
 		int spritew = 8;
 		int spriteh = 1;
 		
-		Order order = Order.tblr;
-
 		// load image data
 		BufferedImage image = null;
 		String basename = "";
@@ -56,37 +54,92 @@ public class ImagePack {
 		}
 
 		// extract a palette.
-		List<Integer> palette = new ArrayList<Integer>();
-		{
-			palette.add(0xff2d1e2a);
-			palette.add(0xff29565e);
+		int backgroundColour = 0xff2d1e2a;
+		int foregroundColour = 0xff29565e;
+		ArrayList<Integer> specialColours = new ArrayList<Integer>();
+		specialColours.add(0xffff0000);
+		specialColours.add(0xffff0001);
+		specialColours.add(0xffff0002);
+		specialColours.add(0xffff0003);
+		specialColours.add(0xffff0004);
+		specialColours.add(0xffff0005);
+		specialColours.add(0xffff0006);
+		specialColours.add(0xffff0007);
+		int data = 0;
+		
 
-		}
+		out.write(": chunk_"+basename);
+		out.write("\n");
+		out.write("\t"+image.getHeight());
+		out.write("\n");
+		out.write("\t");
+		
 
-		// unpack image data
-		List<Integer> data = new ArrayList<Integer>();
-		int outerMax = order.getOuterMax(image, spritew, spriteh);
-		int innerMax = order.getInnerMax(image, spritew, spriteh);
-		List<HashSet<Integer>> planes = new ArrayList<HashSet<Integer>>();
-		if (palette.size() > 2) {
-			planes.add(new HashSet<Integer>(Arrays.asList(palette.get(1), palette.get(3))));
-			planes.add(new HashSet<Integer>(Arrays.asList(palette.get(2), palette.get(3))));
+		StringBuilder mainData = new StringBuilder();
+		mainData.append("\n");
+		mainData.append("\t");
+		int[] metaData = new int[image.getHeight()/4];
+		for(int i=0;i<metaData.length;i++){
+			metaData[i]=-1;
 		}
-		else {
-			planes.add(new HashSet<Integer>(Arrays.asList(palette.get(1))));
-		}
-		for(int outer = 0; outer < outerMax; outer++) {
-			for(int inner = 0; inner < innerMax; inner++) {
-				for(Set<Integer> plane : planes) {
-					for(int yoff = 0; yoff < spriteh; yoff += 1) {
-						for(int xoff = 0; xoff < spritew; xoff += 8) {
-							data.add(order.getByte(outer, inner, spritew, spriteh, xoff, yoff, image, plane));
-						}
+		for(int y=0;y<image.getHeight();y++){
+			for(int x=0;x<image.getWidth();x++){
+				data <<= 1;
+				int pixel = image.getRGB(x, y);
+				data += pixel==backgroundColour?0:1;
+				if(pixel!=backgroundColour && pixel!=foregroundColour){
+					if(!specialColours.contains(pixel)){
+						System.out.println();
+						System.out.println("invalid colour found: "+Integer.toHexString(pixel)+" in "+basename);
+						System.exit(1);
 					}
+					if(y%4 != 0){
+						System.out.println();
+						System.out.println("special colour found on non%4 y: "+y+" in "+basename);
+						System.exit(1);	
+					}
+					if(x%4 != 0){
+						System.out.println();
+						System.out.println("special colour found on non%4 x: "+x+" in "+basename);
+						System.exit(1);	
+					}
+					if(metaData[y/4]!=-1){
+						System.out.println();
+						System.out.println("multiple special colours found in row: "+y+" in "+basename);
+						System.exit(1);		
+					}
+
+					int meta = specialColours.indexOf(pixel);
+					meta <<= 5;
+					meta += x/4;
+					metaData[y/4]=meta;
+
+				}
+				if(x%8==7){
+					String string = Integer.toHexString(data);
+					if(string.length()==1)string="0"+string;
+					string = "0x"+string;
+					mainData.append(string);
+					if(x==image.getWidth()-1){
+						mainData.append("\n");
+						mainData.append("\t");
+					}
+					else{
+						mainData.append(" ");
+					}
+
+					data = 0;
 				}
 			}
 		}
 
+		mainData.append("\n");
+		for(int i:metaData){
+			out.write((i==-1?0:i)+" ");
+		}
+
+		out.write(mainData.toString());
+		/*
 
 		// format out image data
 		out.write(": chunk_"+basename);
@@ -115,48 +168,7 @@ public class ImagePack {
 			else{
 				out.write(" ");
 			}
-		}
+		}*/
 	}
 }
 
-enum Order {
-	tblr(true ,true ,true ), // default
-	tbrl(true ,true ,false),
-	btlr(true ,false,true ),
-	btrl(true ,false,false),
-	lrtb(false,true ,true ),
-	lrbt(false,true ,false),
-	rltb(false,false,true ),
-	rlbt(false,false,false);
-
-	private final boolean verticalOuter;
-	private final boolean ascendingOuter;
-	private final boolean ascendingInner;
-
-	private Order(boolean verticalOuter, boolean ascendingOuter, boolean ascendingInner) {
-		this.verticalOuter  = verticalOuter;
-		this.ascendingOuter = ascendingOuter;
-		this.ascendingInner = ascendingInner;
-	}
-
-	public int getOuterMax(BufferedImage i, int spritew, int spriteh) {
-		return  verticalOuter ? (i.getHeight()/spriteh) : (i.getWidth()/spritew);
-	}
-
-	public int getInnerMax(BufferedImage i, int spritew, int spriteh) {
-		return !verticalOuter ? (i.getHeight()/spriteh) : (i.getWidth()/spritew);
-	}
-
-	public int getByte(int outer, int inner, int spritew, int spriteh, int xoff, int yoff, BufferedImage i, Set<Integer> colors) {
-		if (!ascendingOuter) { outer = getOuterMax(i, spritew, spriteh) - 1 - outer; }
-		if (!ascendingInner) { inner = getInnerMax(i, spritew, spriteh) - 1 - inner; }
-		int x = xoff + ( verticalOuter ? (inner*spritew) : (outer*spritew));
-		int y = yoff + (!verticalOuter ? (inner*spriteh) : (outer*spriteh));
-		int ret = 0;
-		for(int index = 0; index < 8; index++) {
-			int pixel = i.getRGB(x + index, y);
-			ret = ((ret << 1) | (colors.contains(pixel) ? 1 : 0));
-		}
-		return ret;
-	}
-}
