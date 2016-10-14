@@ -675,7 +675,8 @@
 
 	i := spear1
 	load a_spearX - a_spearY
-	f_drawSpear
+	# only need to update spears that aren't stuck
+	if a_spearSpeedX != 0 then f_drawSpear
 ;
 
 : f_redrawSprites
@@ -686,24 +687,32 @@
 
 	i := spear1
 	load a_spearX - a_spearY
-	f_drawSpear
+	# only need to update spears that aren't stuck
+	if a_spearSpeedX != 0 then f_drawSpear
 ;
 
 : f_scroll
 	# scrolls exactly one row
 	# a bit inefficient but I like how it looks when you ascend faster than the scrolling
 	push
+
 	i := player
 	load a_playerY
-
 	a_playerY += 1
+	i := player
+	save a_playerY
+
+	i := spear1
+	load a_spearY
+	a_spearY += 1
+	i := spear1
+	save a_spearY
+
 	plane 3
 	scroll-down 1
 	plane 1
 	f_drawMap
 
-	i := player
-	save a_playerY
 	pop
 ;
 
