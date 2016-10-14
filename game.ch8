@@ -158,21 +158,6 @@
 	pop
 ;
 
-: f_moveSpearsV
-	push
-	i := spear1
-	load v4
-
-	a_spearSpeedY += c_spearGravityStrength
-	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
-	a_spearY += a_spearSpeedY
-	f_drawSpear
-
-	i := spear1
-	save v4
-	pop
-;
-
 
 #################################
 #
@@ -236,7 +221,7 @@
 	f_setup
 	loop
 		f_checkScrolling
-		f_moveSpearsV
+		f_redrawSprites
 		f_gravity
 		f_checkCollisionV
 		f_input
@@ -454,12 +439,12 @@
 
 	a_counter := a_spriteSpeedX
 	loop	
-		f_checkCollisionH_drawSprite # undraw
+		f_checkCollision_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
-		f_checkCollisionH_drawSprite # redraw
+		f_checkCollision_drawSprite # redraw
 		if vf != 0 begin
-			f_checkCollisionH_drawSprite
+			f_checkCollision_drawSprite
 
 			push
 			f_checkCollisionH_checkStep
@@ -472,13 +457,13 @@
 			# if not a step, force the sprite back
 			a_spriteSpeedX := 0
 			a_spriteX -= a_temp
-			f_checkCollisionH_drawSprite
+			f_checkCollision_drawSprite
 			return
 
 			: j_checkCollisionH_detectCollision_step
 			# redraw player 1 higher
 			a_spriteY += -1
-			f_checkCollisionH_drawSprite
+			f_checkCollision_drawSprite
 		end
 	if a_counter != 0 then again
 ;
@@ -528,7 +513,7 @@
 	vf := 0
 ;
 
-: f_checkCollisionH_drawSprite
+: f_checkCollision_drawSprite
 	push
 	v0 <<= a_spriteTableOffset
 	v0 <<= v0
@@ -550,24 +535,74 @@
 
 : f_gravity
 	push
+
+	# player gravity
 	i := player
 	load v6
-
 	a_playerSpeedY += c_gravityStrength
-
 	i := player
 	save v6
+
+	# spear gravity
+	i := spear1
+	load v4
+	a_spearSpeedY += c_spearGravityStrength
+	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
+	i := spear1
+	save v4
+
 	pop
 ;
 
 : f_checkCollisionV
-	:alias a_partialDY v7
-
 	push
+
+	# check player collisions
 	i := player
 	load v6
 
-	f_drawAmy
+	v7 := a_playerX
+	v8 := a_playerY
+	v9 := a_playerSpeedY
+	va := 0
+	f_checkCollisionV_detectCollision
+
+	a_playerX := v7
+	a_playerY := v8
+	a_playerSpeedY := v9
+	i := player
+	save v6
+
+	# check spear collisions
+	i := spear1
+	load v4
+
+	v7 := a_spearX
+	v8 := a_spearY
+	v9 := a_spearSpeedY
+	va := 1
+	f_checkCollisionV_detectCollision
+
+	a_spearX := v7
+	a_spearY := v8
+	a_spearSpeedY := v9
+	i := spear1
+	save v4
+
+	pop
+;
+
+: f_checkCollisionV_detectCollision
+	# collide slowly
+	#   undraw sprite and redraw one pixel in the x direction and see if
+	#   it collides. if it ever does, revert back one position and exit.
+	#
+	# input parameters:
+	:alias a_spriteX           v7
+	:alias a_spriteY           v8
+	:alias a_spriteSpeedY      v9
+	:alias a_spriteTableOffset va
+	:alias a_partialDY         vb
 
 	# a_temp is the direction the player is traveling
 
@@ -578,44 +613,37 @@
 
 	# < 128 is (probably) positive and > 128 is (probably) negative
 
-	if a_playerSpeedY < 128 begin
+	if a_spriteSpeedY < 128 begin
 		a_temp := 1
-		a_partialDY >>= a_playerSpeedY
+		a_partialDY >>= a_spriteSpeedY
 		a_partialDY >>= a_partialDY
 	end 
 
-	if a_playerSpeedY > 128 begin
+	if a_spriteSpeedY > 128 begin
 		a_temp := -1
-		a_partialDY >>= a_playerSpeedY
+		a_partialDY >>= a_spriteSpeedY
 		a_partialDY >>= a_partialDY
 		a_partialDY += 0b11000000
 	end
 	
-	if a_partialDY == 0 then jump j_checkCollisionV_return
+	if a_partialDY == 0 then return
 
-	# collide slowly-
-	# undraw amy, redraw amy one pixel in the y direction and see if she collides
-	# if she ever does, revert back one position and exit
-	
 	loop	
-		f_drawAmy
+		f_checkCollision_drawSprite
 		a_partialDY -= a_temp
-		a_playerY += a_temp
-		f_drawAmy
+		a_spriteY += a_temp
+		f_checkCollision_drawSprite
 		if vf != 0 begin
-			if a_temp == 1 then a_playerJumpAvailable := 2
-			a_playerSpeedY := 0
-			f_drawAmy
-			a_playerY -= a_temp
-			f_drawAmy
-			jump j_checkCollisionV_return
+			if a_spriteTableOffset == 0 begin
+				if a_temp == 1 then a_playerJumpAvailable := 2
+			end
+			a_spriteSpeedY := 0
+			f_checkCollision_drawSprite
+			a_spriteY -= a_temp
+			f_checkCollision_drawSprite
+			return
 		end
 	if a_partialDY != 0 then again
-
-: j_checkCollisionV_return
-	i := player
-	save v6
-	pop
 ;
 
 : f_tickCooldowns
@@ -641,6 +669,17 @@
 
 : f_clearSprites
 	# undraw all dynamic sprites before the screen scroll
+	i := player
+	load a_playerX - a_playerY
+	f_drawAmy
+
+	i := spear1
+	load a_spearX - a_spearY
+	f_drawSpear
+;
+
+: f_redrawSprites
+	# redraws all dynamic sprites after the screen scroll
 	i := player
 	load a_playerX - a_playerY
 	f_drawAmy
