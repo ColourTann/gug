@@ -478,14 +478,17 @@
 ;
 
 : f_selectChunk 
-	v0 := a_currentChunkEntrance
- 	v0 <<= v0
+	# fun maths puzzle! v0 = (18 * a_currentChunkEntrance) + (6 * a_currentChunkExit)
+ 	v0 <<= a_currentChunkEntrance
  	v0 <<= v0
  	v0 += a_currentChunkExit
  	v0 <<= v0
  	v0 += a_currentChunkExit
  	v0 += a_currentChunkEntrance
  	v0 <<= v0
+ 	# then jump to that. 
+ 	# the reason for this is that i := long label is 2 instructions and ; is 1 instruction
+ 	# and each instruction is 2 bytes
  	jump0 chunks
 ;
 
@@ -501,6 +504,7 @@
 		f_selectChunk
 		# the first byte of each chunk is how big that chunk is
 		load a_chunkLeftToDraw - a_chunkLeftToDraw
+		# it is used as an offset for where to start drawing so subtract 1!
 		a_chunkLeftToDraw += -1
 	end
 	# get to the correct part of the chunk
@@ -510,12 +514,12 @@
 	a_temp >>= a_temp
 	i += a_temp
 	a_temp := 16
-	a_counter := a_chunkLeftToDraw
+	a_temp2 := a_chunkLeftToDraw
 	
 	loop
-		if a_counter == 0 then jump j_drawMap_exit
+		if a_temp2 == 0 then jump j_drawMap_exit
 		i += a_temp
-		a_counter += -1
+		a_temp2 += -1
 	again
 
 	: j_drawMap_exit
@@ -557,12 +561,13 @@
 	# get to the right point in the data
 	f_selectChunk
 
+	# offset by y/4
+	i += a_temp
+
 	# add one for chunk size byte
 	a_temp1 := 1
 	i += a_temp1
 
-	# offset by y/4
-	i += a_temp
 	load a_temp - a_temp
 	
 	# if temp is 0 then no special
@@ -577,13 +582,11 @@
 	a_temp <<= a_temp
 	a_bgX := a_temp
 	a_bgY := 0
-
 	# now a_temp holds the x position and a_temp1 holds the type
-	
-	
-
-	
-	v0 := a_temp1 # danger! overwriting a_bgx
+	# need to use v0 because of jump0
+	# danger! overwriting a_bgx
+	v0 := a_temp1 
+	# shift right to get the type into 0b00000111
 	v0 >>= v0
 	v0 >>= v0
 	v0 >>= v0
@@ -623,8 +626,6 @@
 	f_fillDanger
 ;
 
-
-
 : f_fillDanger
 	a_bgX := a_temp
 	a_fillY := 0
@@ -650,7 +651,6 @@
 
 		a_fillY += 1
 	if a_fillY != a_specialHeight then again
-
 ;
 
 : amy
