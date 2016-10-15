@@ -1,7 +1,6 @@
 :const c_jumpHeight       -14
 :const c_doubleJumpHeight -8
-:const c_maxSpeedLeft     -8
-:const c_maxSpeedRight     8
+:const c_maxSpeed          8
 :const c_runAccelerate     4
 :const c_airDecelerate     4
 :const c_groundDecelerate  4
@@ -189,14 +188,21 @@
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
 	a_playerSpeedX -= va
-	if a_playerSpeedX == -12 then a_playerSpeedX := c_maxSpeedLeft
+	a_temp := c_maxSpeed
+	vb := 0
+	vb -= a_temp
+	a_temp := vb
+	a_temp -= va
+	if a_playerSpeedX == a_temp then a_playerSpeedX := vb
 	jump j_input_save
 
 : j_input_right
 	a_temp := 9 # D
 	if a_temp -key then jump j_input_none
 	a_playerSpeedX += va
-	if a_playerSpeedX == 12 then a_playerSpeedX := c_maxSpeedRight
+	a_temp := c_maxSpeed
+	a_temp += va
+	if a_playerSpeedX == a_temp then a_playerSpeedX := c_maxSpeed
 	jump j_input_save
 
 : j_input_none
