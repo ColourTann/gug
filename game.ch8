@@ -6,8 +6,10 @@
 :const c_groundDecelerate  4
 :const c_gravityStrength   2
 
-:alias a_temp      vd
-:alias a_counter   vc
+:alias a_counter    vd
+:alias a_temp 		vc
+:alias a_temp1   	vb
+:alias a_temp2   	va
 
 
 #################################
