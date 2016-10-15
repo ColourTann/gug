@@ -6,6 +6,7 @@ import javax.imageio.*;
 public class ImagePack {
 	static BufferedWriter out;
 	public static void main(String[] a) throws IOException {
+		System.out.println();
 		File folder = new File(".");
 		File[] listOfFiles = folder.listFiles();
 		out = new BufferedWriter(new FileWriter("output.txt"));
@@ -21,6 +22,7 @@ public class ImagePack {
 			}
 		}
 		out.close();
+		System.out.println();
 		System.out.println();
 		System.out.println("Nice! All files written to output.txt");
 	}
@@ -39,8 +41,7 @@ public class ImagePack {
 			basename = target.getName().split("\\.")[0];
 		}
 		catch(IOException e) {
-			System.err.println("unable to load image '"+target+"'");
-			System.exit(1);
+			error("unable to load image '"+target+"'");
 		}
 		// check image dimensions
 		if ((image.getWidth() % spritew) != 0 || (image.getHeight() % spriteh) != 0) {
@@ -89,24 +90,16 @@ public class ImagePack {
 				data += pixel==backgroundColour?0:1;
 				if(pixel!=backgroundColour && pixel!=foregroundColour){
 					if(!specialColours.contains(pixel)){
-						System.out.println();
-						System.out.println("invalid colour found: "+Integer.toHexString(pixel)+" in "+basename);
-						System.exit(1);
+						error("invalid colour found: "+Integer.toHexString(pixel)+" in "+basename);
 					}
 					if(y%4 != 0){
-						System.out.println();
-						System.out.println("special colour found on non%4 y: "+y+" in "+basename);
-						System.exit(1);	
+						error("special colour found on non%4 y: "+y+" in "+basename);
 					}
 					if(x%4 != 0){
-						System.out.println();
-						System.out.println("special colour found on non%4 x: "+x+" in "+basename);
-						System.exit(1);	
+						error("special colour found on non%4 x: "+x+" in "+basename);
 					}
 					if(metaData[y/4]!=-1){
-						System.out.println();
-						System.out.println("multiple special colours found in row: "+y+" in "+basename);
-						System.exit(1);		
+						error("multiple special colours found in row: "+y+" in "+basename);	
 					}
 
 					int meta = specialColours.indexOf(pixel);
@@ -169,6 +162,21 @@ public class ImagePack {
 				out.write(" ");
 			}
 		}*/
+	}
+	static void error(String s){
+		System.out.println();
+		System.out.println();
+		System.out.println("---------------------");
+		if(Math.random()<.98){
+			System.out.println("XxXxXx__ERROR__xXxXxX");
+		}
+		else{
+			System.out.println("XxXxXx_Sephiroth_xXxXxX");
+		}
+		System.out.println("---------------------");
+		System.out.println();
+		System.out.println(s);
+		System.exit(1);
 	}
 }
 
