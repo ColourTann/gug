@@ -1,6 +1,6 @@
 :const c_jumpHeight       -14
 :const c_doubleJumpHeight -8
-:const c_maxSpeed          8
+:const c_maxSpeed          4
 :const c_runAccelerate     4
 :const c_airDecelerate     4
 :const c_groundDecelerate  4
