@@ -57,8 +57,8 @@
 :const c_spearGravityStrength 1
 :const c_spearInitialX        5
 :const c_spearInitialY        -4
-:const c_spearCooldown        100 #  5 seconds @ 20 fps
-:const c_spearTime            200 # 10 seconds @ 20 fps
+:const c_spearCooldown        40  #  2 seconds @ 20 fps
+:const c_spearTime            120 #  6 seconds @ 20 fps
 
 :alias a_spearX      v0
 :alias a_spearY      v1
