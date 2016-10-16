@@ -125,22 +125,21 @@
 	# initialize a spear at the player's location
 	i := player
 	load a_playerX - a_playerDirection
-	va := a_playerX
-	vb := a_playerY
-	vc := a_playerDirection
+	a_temp := a_playerX
 
-	if vc == 0 then va += -2
-	if vc == 1 then va +=  3
+	if a_playerDirection == 0 then a_temp += -2
+	if a_playerDirection == 1 then a_temp +=  3
 
-	a_spearX := va
-	a_spearY := vb
+	a_spearX := a_temp
+	a_spearY := a_playerY
 
 	# initialize spear speed
-	a_spearSpeedX := 0
-	a_temp := c_spearInitialX
-	if vc == 0 then a_spearSpeedX -= a_temp
-	if vc == 1 then a_spearSpeedX += a_temp
+	a_temp := 0
+	a_temp1 := c_spearInitialX
+	if a_playerDirection == 0 then a_temp -= a_temp1
+	if a_playerDirection == 1 then a_temp += a_temp1
 
+	a_spearSpeedX := a_temp
 	a_spearSpeedY := c_spearInitialY
 	a_spearTimer  := c_spearTime
 
