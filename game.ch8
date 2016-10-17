@@ -456,6 +456,12 @@
 #  Collision Detection
 #
 
+:alias a_spriteX           v7
+:alias a_spriteY           v8
+:alias a_spriteSpeedX      v9
+:alias a_spriteSpeedY      v9
+:alias a_spriteTableOffset va
+
 : spriteTable
 	i := amy
 	sprite a_spriteX a_spriteY 3
@@ -519,10 +525,10 @@
 	#   it collides. if it ever does, revert back one position and exit.
 	#
 	# input parameters:
-	:alias a_spriteX           v7
-	:alias a_spriteY           v8
-	:alias a_spriteSpeedX      v9
-	:alias a_spriteTableOffset va
+	#   v7 -> a_spriteX
+	#   v8 -> a_spriteY
+	#   v9 -> a_spriteSpeedX
+	#   va -> a_spriteTableOffset
 
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
@@ -668,10 +674,10 @@
 	#   sets vf to 0 if there is no collision, sets vf to 1 if there is
 	#
 	# input parameters:
-	:alias a_spriteX           v7
-	:alias a_spriteY           v8
-	:alias a_spriteSpeedY      v9
-	:alias a_spriteTableOffset va
+	#   v7 -> a_spriteX
+	#   v8 -> a_spriteY
+	#   v9 -> a_spriteSpeedY
+	#   va -> a_spriteTableOffset
 	:alias a_partialDY         vb
 
 	# a_temp is the direction the player is traveling
