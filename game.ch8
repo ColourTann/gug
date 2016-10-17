@@ -69,7 +69,7 @@
 :alias a_spearY      v1
 :alias a_spearSpeedX v2
 :alias a_spearSpeedY v3
-:alias a_spearActive v4
+:alias a_spearActive v5
 
 : spear
 	0b111
@@ -427,10 +427,10 @@
 #
 
 :alias a_spriteX           v7
-:alias a_spriteY           v8
-:alias a_spriteSpeedX      v9
-:alias a_spriteSpeedY      v9
-:alias a_spriteTableOffset va
+:alias a_spriteY           v1
+:alias a_spriteSpeedX      v2
+:alias a_spriteSpeedY      v3
+:alias a_spriteTableOffset v4
 
 : spriteTable
 	i := amy
@@ -460,14 +460,14 @@
 	load v6
 
 	v7 := a_playerX
-	v8 := a_playerY
-	v9 := a_playerSpeedX
-	va := 0
+	v1 := a_playerY
+	v2 := a_playerSpeedX
+	v4 := 0
 	f_checkCollisionH_detectCollision
 
 	a_playerX := v7
-	a_playerY := v8
-	a_playerSpeedX := v9
+	a_playerY := v1
+	a_playerSpeedX := v2
 	i := player
 	save v6
 
@@ -476,13 +476,13 @@
 	load v4
 
 	v7 := a_spearX
-	v8 := a_spearY
+	v1 := a_spearY
 	v9 := a_spearSpeedX
-	va := 1
+	v4 := 1
 	f_checkCollisionH_detectCollision
 
 	a_spearX := v7
-	a_spearY := v8
+	a_spearY := v1
 	a_spearSpeedX := v9
 	i := spear1
 	save v4
@@ -496,8 +496,8 @@
 	#
 	# input parameters:
 	#   v7 -> a_spriteX
-	#   v8 -> a_spriteY
-	#   v9 -> a_spriteSpeedX
+	#   v1 -> a_spriteY
+	#   v2 -> a_spriteSpeedX
 	#   va -> a_spriteTableOffset
 
 	if a_spriteSpeedX == 0  then return
@@ -588,14 +588,14 @@
 	load v6
 
 	v7 := a_playerX
-	v8 := a_playerY
-	v9 := a_playerSpeedY
-	va := 0
+	v1 := a_playerY
+	v3 := a_playerSpeedY
+	v4 := 0
 	f_checkCollisionV_detectCollision
 
 	a_playerX := v7
-	a_playerY := v8
-	a_playerSpeedY := v9
+	a_playerY := v1
+	a_playerSpeedY := v3
 	i := player
 	save v6
 
@@ -605,14 +605,14 @@
 	if a_spearActive != 1 then jump j_checkCollisionV_return
 
 	v7 := a_spearX
-	v8 := a_spearY
-	v9 := a_spearSpeedY
-	va := 1
+	v1 := a_spearY
+	v3 := a_spearSpeedY
+	v4 := 1
 	f_checkCollisionV_detectCollision
 	a_temp   := vf
 	a_spearX := v7
-	a_spearY := v8
-	a_spearSpeedY := v9
+	a_spearY := v1
+	a_spearSpeedY := v3
 
 	# if the spear wraps around vertically, destroy it
 	if a_spearY < 64 then jump j_checkCollisionV_spearSlide
@@ -645,8 +645,8 @@
 	#
 	# input parameters:
 	#   v7 -> a_spriteX
-	#   v8 -> a_spriteY
-	#   v9 -> a_spriteSpeedY
+	#   v1 -> a_spriteY
+	#   v3 -> a_spriteSpeedY
 	#   va -> a_spriteTableOffset
 	:alias a_partialDY         vb
 
