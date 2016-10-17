@@ -251,6 +251,7 @@
 : currentChunkExit
 	3
 : currentChunkIndex
+	0
 : specialWidth
 	0
 : specialHeight
