@@ -1,9 +1,6 @@
 :const c_jumpHeight       -14
 :const c_doubleJumpHeight -8
-:const c_maxSpeed          1
-:const c_runAccelerate     1
-:const c_airDecelerate     1
-:const c_groundDecelerate  1
+:const c_horizontalSpeed   1
 :const c_gravityStrength   2
 
 :alias a_counter    vd
@@ -341,6 +338,7 @@
 	push
 	i := player
 	load v6
+	a_playerSpeedX := 0
 
 : j_input_spear
 	a_temp := 6 # E
@@ -381,45 +379,18 @@
 	f_jumpKeyReleased
 
 : j_input_left
-	va := c_runAccelerate
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
-	a_playerSpeedX -= va
-	a_temp := c_maxSpeed
-	vb := 0
-	vb -= a_temp
-	a_temp := vb
-	a_temp -= va
-	if a_playerSpeedX == a_temp then a_playerSpeedX := vb
+	a_temp1 := c_horizontalSpeed
+	a_playerSpeedX -= a_temp1
 	a_playerDirection := 0
 	jump j_input_save
 
 : j_input_right
 	a_temp := 9 # D
-	if a_temp -key then jump j_input_none
-	a_playerSpeedX += va
-	a_temp := c_maxSpeed
-	a_temp += va
-	if a_playerSpeedX == a_temp then a_playerSpeedX := c_maxSpeed
+	if a_temp -key then jump j_input_save
+	a_playerSpeedX := c_horizontalSpeed
 	a_playerDirection := 1
-	jump j_input_save
-
-: j_input_none
-	# if neither left or right are pressed, slow down
-	if a_playerSpeedX == 0  then jump j_input_save
-
-	va := c_groundDecelerate
-	vb := c_airDecelerate
-	if a_playerSpeedX < 128 begin
-		if a_playerJumpAvailable == 2 then a_playerSpeedX -= va
-		if a_playerJumpAvailable != 2 then a_playerSpeedX -= vb
-		if a_playerSpeedX > 128 then a_playerSpeedX := 0
-	end
-	if a_playerSpeedX > 128 begin
-		if a_playerJumpAvailable == 2 then a_playerSpeedX += va
-		if a_playerJumpAvailable != 2 then a_playerSpeedX += vb
-		if a_playerSpeedX < 128 then a_playerSpeedX := 0
-	end
 
 : j_input_save
 	i := player
