@@ -298,16 +298,15 @@
 : main
 	hires
 	f_setup
+	f_drawAmy
 	loop
 		f_checkScrolling
-		f_redrawSprites
 		f_gravity
 		f_checkCollisionV
 		f_input
 		f_checkCollisionH
 		f_tickCooldowns
 		f_delayFPS
-		f_clearSprites
 	again
 ;
 
@@ -748,30 +747,6 @@
 		if vf != 0 then again
 	vf := 3
 	delay := vf
-;
-
-: f_clearSprites
-	# undraw all dynamic sprites before the screen scroll
-	i := player
-	load a_playerX - a_playerY
-	f_drawAmy
-
-	i := spear1
-	load a_spearX - a_spearY
-	# only need to update spears that aren't stuck
-	if a_spearSpeedX != 0 then f_drawSpear
-;
-
-: f_redrawSprites
-	# redraws all dynamic sprites after the screen scroll
-	i := player
-	load a_playerX - a_playerY
-	f_drawAmy
-
-	i := spear1
-	load a_spearX - a_spearY
-	# only need to update spears that aren't stuck
-	if a_spearActive == 1 then f_drawSpear
 ;
 
 : f_scroll
