@@ -18,8 +18,9 @@
 :alias a_playerY             v1
 :alias a_playerSpeedX        v2
 :alias a_playerSpeedY        v3
-:alias a_playerDirection     v4
-:alias a_playerWild          v5
+:alias a_playerType		     v4
+:alias a_playerDirection     v5
+:alias a_playerWild          v6
 
 :alias a_playerJumpAvailable v6
 
@@ -34,6 +35,8 @@
 	0
 : playerSpeedY
 	0
+: playerType
+0
 : playerDirection
 	# 0 for facing left, 1 for facing right
 	1
@@ -182,7 +185,7 @@
 	f_queue_spears
 	# save new spear as spear 1
 	i := spear1
-	save v4
+	save v5
 
 	# set the spear cooldown
 	i  := spearCooldown
@@ -198,19 +201,19 @@
 
 	# despawn spear3
 	i := spear3
-	load v4
+	load v5
 	if a_spearActive == 1 then f_drawSpear
 
 	# push spears down the queue
 	i := spear2
-	load v4
+	load v5
 	i := spear3
-	save v4
+	save v5
 
 	i := spear1
-	load v4
+	load v5
 	i := spear2
-	save v4
+	save v5
 
 	pop
 ;
@@ -419,11 +422,11 @@
 
 	# spear gravity
 	i := spear1
-	load v4
+	load v6
 	a_spearSpeedY += c_spearGravityStrength
 	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
 	i := spear1
-	save v4
+	save v5
 
 	pop
 ;
@@ -443,23 +446,25 @@
 
 : spriteTable
 	i := amy
-	sprite a_spriteX a_spriteY 3
+	sprite a_temp a_spriteY 3
 	pop
 	return
 
 	i := spear
-	sprite a_spriteX a_spriteY 1
+	sprite a_temp a_spriteY 1
 	pop
 	return
 ;
 
 : f_checkCollision_drawSprite
+
 	push
-	#v0 <<= a_spriteTableOffset
-	#v0 <<= v0
-	#v0 <<= v0
-	#jump0 spriteTable
-	spriteTable
+	a_temp := v0
+	v0 <<= a_spriteTableOffset
+	v0 <<= v0
+	v0 <<= v0
+
+	jump0 spriteTable
 ;
 
 : f_checkCollisionH
@@ -478,14 +483,14 @@
 
 	# check spear collisions
 	i := spear1
-	load v6
+	load v5
 
 	
 	f_checkCollisionH_detectCollision
-
+	
 	
 	i := spear1
-	save v6
+	save v5
 	pop
 ;
 
@@ -599,7 +604,7 @@
 
 	# check spear collisions
 	i := spear1
-	load v6
+	load v5
 	if a_spearActive != 1 then jump j_checkCollisionV_return
 
 	
@@ -621,7 +626,7 @@
 
 : j_checkCollisionV_spearSave
 	i := spear1
-	save v6
+	save v5
 
 : j_checkCollisionV_return
 	pop
@@ -726,7 +731,7 @@
 	a_temp    := 0
 	loop
 		f_selectSpear
-		load v4
+		load v5
 
 		a_spearY += 1
 		if a_spearY > 63 then a_spearActive := 0
@@ -734,7 +739,7 @@
 
 		f_selectSpear
 		v0 := a_temp1
-		save v4
+		save v5
 
 		a_temp += 4
 		a_counter += -1
