@@ -16,10 +16,11 @@
 
 :alias a_playerX             v0
 :alias a_playerY             v1
-:alias a_playerDirection     v2
-:alias a_playerWild          v3
-:alias a_playerSpeedX        v4
-:alias a_playerSpeedY        v5
+:alias a_playerSpeedX        v2
+:alias a_playerSpeedY        v3
+:alias a_playerDirection     v4
+:alias a_playerWild          v5
+
 :alias a_playerJumpAvailable v6
 
 : player
@@ -28,7 +29,11 @@
 	105
 : playerY
 	56
-
+: playerSpeed
+: playerSpeedX
+	0
+: playerSpeedY
+	0
 : playerDirection
 	# 0 for facing left, 1 for facing right
 	1
@@ -36,11 +41,7 @@
 	# this space reserved for whatever is needed
 	0
 
-: playerSpeed
-: playerSpeedX
-	0
-: playerSpeedY
-	0
+
 
 : playerJumpAvailable
 	0
@@ -426,7 +427,7 @@
 #  Collision Detection
 #
 
-:alias a_spriteX           v7
+:alias a_spriteX           v0
 :alias a_spriteY           v1
 :alias a_spriteSpeedX      v2
 :alias a_spriteSpeedY      v3
@@ -446,10 +447,11 @@
 
 : f_checkCollision_drawSprite
 	push
-	v0 <<= a_spriteTableOffset
-	v0 <<= v0
-	v0 <<= v0
-	jump0 spriteTable
+	#v0 <<= a_spriteTableOffset
+	#v0 <<= v0
+	#v0 <<= v0
+	#jump0 spriteTable
+	spriteTable
 ;
 
 : f_checkCollisionH
@@ -459,15 +461,10 @@
 	i := player
 	load v6
 
-	v7 := a_playerX
-	v1 := a_playerY
-	v2 := a_playerSpeedX
-	v4 := 0
+	
 	f_checkCollisionH_detectCollision
 
-	a_playerX := v7
-	a_playerY := v1
-	a_playerSpeedX := v2
+
 	i := player
 	save v6
 
@@ -495,10 +492,10 @@
 	#   it collides. if it ever does, revert back one position and exit.
 	#
 	# input parameters:
-	#   v7 -> a_spriteX
+	#   v0 -> a_spriteX
 	#   v1 -> a_spriteY
 	#   v2 -> a_spriteSpeedX
-	#   va -> a_spriteTableOffset
+	#   v4 -> a_spriteTableOffset
 
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
@@ -587,15 +584,10 @@
 	i := player
 	load v6
 
-	v7 := a_playerX
-	v1 := a_playerY
-	v3 := a_playerSpeedY
-	v4 := 0
+	
 	f_checkCollisionV_detectCollision
 
-	a_playerX := v7
-	a_playerY := v1
-	a_playerSpeedY := v3
+	
 	i := player
 	save v6
 
@@ -680,9 +672,9 @@
 		a_spriteY += a_temp
 		f_checkCollision_drawSprite
 		if vf != 0 begin
-			if a_spriteTableOffset == 0 begin
+			#if a_spriteTableOffset == 0 begin
 				if a_temp == 1 then a_playerJumpAvailable := 2
-			end
+			#end
 			a_spriteSpeedY := 0
 			f_checkCollision_drawSprite
 			a_spriteY -= a_temp
