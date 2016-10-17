@@ -20,9 +20,8 @@
 :alias a_playerSpeedY        v3
 :alias a_playerType		     v4
 :alias a_playerDirection     v5
-:alias a_playerWild          v6
-
 :alias a_playerJumpAvailable v6
+:alias a_playerAllData 		 v6
 
 : player
 : playerCoords
@@ -40,11 +39,6 @@
 : playerDirection
 	# 0 for facing left, 1 for facing right
 	1
-: playerWild
-	# this space reserved for whatever is needed
-	0
-
-
 
 : playerJumpAvailable
 	0
@@ -75,6 +69,7 @@
 :alias a_spearSpeedY v3
 :alias a_spearType 	 v4
 :alias a_spearActive v5
+:alias a_spearAllData v5
 
 : spear
 	0b111
@@ -641,10 +636,10 @@
 	#   sets vf to 0 if there is no collision, sets vf to 1 if there is
 	#
 	# input parameters:
-	#   v7 -> a_spriteX
+	#   v0 -> a_spriteX
 	#   v1 -> a_spriteY
 	#   v3 -> a_spriteSpeedY
-	#   va -> a_spriteTableOffset
+	#   v4 -> a_spriteTableOffset
 	:alias a_partialDY         vb
 
 	# a_temp is the direction the player is traveling
