@@ -101,7 +101,7 @@
 : spear1SpeedY
 	0
 : spearType
-	0
+	1
 : spear1Active
 	0
 
@@ -116,7 +116,7 @@
 : spear2SpeedY
 	0
 : spear2Type
-	0
+	1
 : spear2Active
 	0
 
@@ -132,7 +132,7 @@
 : spear3SpeedY
 	0
 : spear3Type
-	0
+	1
 : spear3Active
 	0
 
@@ -173,6 +173,7 @@
 
 	a_spearSpeedX := a_temp
 	a_spearSpeedY := c_spearInitialY
+	a_spearType := 1
 	a_spearActive := 1
 
 	f_drawSpear
