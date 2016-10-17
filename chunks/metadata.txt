@@ -1,0 +1,22 @@
+Finnicky red dot rules!
+
+Red dots can only be on x%4 and y%4
+Only one red dot per (4) row(s)
+
+The colour has to be FF000N
+
+
+N == 0:
+3x4 # small structure/gem
+
+N == 1
+3x9 # spire
+
+N == 2
+13x10e # large structure
+
+N == 3
+21x3 # pit?
+
+N == 4-7:
+probably enemies or upgrades? not implemented yet
