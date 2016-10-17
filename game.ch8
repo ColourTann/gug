@@ -70,6 +70,7 @@
 :alias a_spearY      v1
 :alias a_spearSpeedX v2
 :alias a_spearSpeedY v3
+:alias a_spearType 	 v4
 :alias a_spearActive v5
 
 : spear
@@ -96,6 +97,8 @@
 	0
 : spear1SpeedY
 	0
+: spearType
+	0
 : spear1Active
 	0
 
@@ -109,6 +112,8 @@
 	0
 : spear2SpeedY
 	0
+: spear2Type
+	0
 : spear2Active
 	0
 
@@ -118,9 +123,12 @@
 	0
 : spear3Y
 	0
+
 : spear3SpeedX
 	0
 : spear3SpeedY
+	0
+: spear3Type
 	0
 : spear3Active
 	0
@@ -470,19 +478,14 @@
 
 	# check spear collisions
 	i := spear1
-	load v4
+	load v6
 
-	v7 := a_spearX
-	v1 := a_spearY
-	v9 := a_spearSpeedX
-	v4 := 1
+	
 	f_checkCollisionH_detectCollision
 
-	a_spearX := v7
-	a_spearY := v1
-	a_spearSpeedX := v9
+	
 	i := spear1
-	save v4
+	save v6
 	pop
 ;
 
@@ -533,6 +536,7 @@
 ;
 
 : f_checkCollisionH_checkStep
+	#a_temp := -1
 	# sets vf to 1 if the player has hit a step, else sets vf to 0
 	# assumes player position is loaded into a_playerX and a_playerY and
 	# player direction is stored in a_temp
@@ -549,6 +553,8 @@
 	#   - this reference to a_playerJumpAvailable is the only reason
 	#     the arguments for collision detection start at v7...
 	if a_playerJumpAvailable != 2 then jump j_checkCollisionH_checkStep_false
+
+
 
 	# draw dot on ground at player's foot
 	#   va differs based on direction to check left or right
@@ -593,19 +599,12 @@
 
 	# check spear collisions
 	i := spear1
-	load v4
+	load v6
 	if a_spearActive != 1 then jump j_checkCollisionV_return
 
-	v7 := a_spearX
-	v1 := a_spearY
-	v3 := a_spearSpeedY
-	v4 := 1
+	
 	f_checkCollisionV_detectCollision
-	a_temp   := vf
-	a_spearX := v7
-	a_spearY := v1
-	a_spearSpeedY := v3
-
+	
 	# if the spear wraps around vertically, destroy it
 	if a_spearY < 64 then jump j_checkCollisionV_spearSlide
 	a_spearActive := 0
@@ -622,7 +621,7 @@
 
 : j_checkCollisionV_spearSave
 	i := spear1
-	save v4
+	save v6
 
 : j_checkCollisionV_return
 	pop
