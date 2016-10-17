@@ -1,9 +1,6 @@
 :const c_jumpHeight       -14
 :const c_doubleJumpHeight -8
-:const c_maxSpeed          1
-:const c_runAccelerate     1
-:const c_airDecelerate     1
-:const c_groundDecelerate  1
+:const c_horizontalSpeed   1
 :const c_gravityStrength   2
 
 :alias a_counter    vd
@@ -19,11 +16,12 @@
 
 :alias a_playerX             v0
 :alias a_playerY             v1
-:alias a_playerDirection     v2
-:alias a_playerWild          v3
-:alias a_playerSpeedX        v4
-:alias a_playerSpeedY        v5
+:alias a_playerSpeedX        v2
+:alias a_playerSpeedY        v3
+:alias a_playerType		     v4
+:alias a_playerDirection     v5
 :alias a_playerJumpAvailable v6
+:alias a_playerAllData 		 v6
 
 : player
 : playerCoords
@@ -31,19 +29,16 @@
 	105
 : playerY
 	56
-
-: playerDirection
-	# 0 for facing left, 1 for facing right
-	1
-: playerWild
-	# this space reserved for whatever is needed
-	0
-
 : playerSpeed
 : playerSpeedX
 	0
 : playerSpeedY
 	0
+: playerType
+0
+: playerDirection
+	# 0 for facing left, 1 for facing right
+	1
 
 : playerJumpAvailable
 	0
@@ -72,7 +67,9 @@
 :alias a_spearY      v1
 :alias a_spearSpeedX v2
 :alias a_spearSpeedY v3
-:alias a_spearActive v4
+:alias a_spearType 	 v4
+:alias a_spearActive v5
+:alias a_spearAllData v5
 
 : spear
 	0b111
@@ -98,6 +95,8 @@
 	0
 : spear1SpeedY
 	0
+: spearType
+	1
 : spear1Active
 	0
 
@@ -111,6 +110,8 @@
 	0
 : spear2SpeedY
 	0
+: spear2Type
+	1
 : spear2Active
 	0
 
@@ -120,10 +121,13 @@
 	0
 : spear3Y
 	0
+
 : spear3SpeedX
 	0
 : spear3SpeedY
 	0
+: spear3Type
+	1
 : spear3Active
 	0
 
@@ -164,6 +168,7 @@
 
 	a_spearSpeedX := a_temp
 	a_spearSpeedY := c_spearInitialY
+	a_spearType := 1
 	a_spearActive := 1
 
 	f_drawSpear
@@ -176,7 +181,7 @@
 	f_queue_spears
 	# save new spear as spear 1
 	i := spear1
-	save v4
+	save v5
 
 	# set the spear cooldown
 	i  := spearCooldown
@@ -192,19 +197,19 @@
 
 	# despawn spear3
 	i := spear3
-	load v4
+	load v5
 	if a_spearActive == 1 then f_drawSpear
 
 	# push spears down the queue
 	i := spear2
-	load v4
+	load v5
 	i := spear3
-	save v4
+	save v5
 
 	i := spear1
-	load v4
+	load v5
 	i := spear2
-	save v4
+	save v5
 
 	pop
 ;
@@ -298,16 +303,15 @@
 : main
 	hires
 	f_setup
+	f_drawAmy
 	loop
 		f_checkScrolling
-		f_redrawSprites
 		f_gravity
 		f_checkCollisionV
 		f_input
 		f_checkCollisionH
 		f_tickCooldowns
 		f_delayFPS
-		f_clearSprites
 	again
 ;
 
@@ -342,6 +346,7 @@
 	push
 	i := player
 	load v6
+	a_playerSpeedX := 0
 
 : j_input_spear
 	a_temp := 6 # E
@@ -382,45 +387,18 @@
 	f_jumpKeyReleased
 
 : j_input_left
-	va := c_runAccelerate
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
-	a_playerSpeedX -= va
-	a_temp := c_maxSpeed
-	vb := 0
-	vb -= a_temp
-	a_temp := vb
-	a_temp -= va
-	if a_playerSpeedX == a_temp then a_playerSpeedX := vb
+	a_temp1 := c_horizontalSpeed
+	a_playerSpeedX -= a_temp1
 	a_playerDirection := 0
 	jump j_input_save
 
 : j_input_right
 	a_temp := 9 # D
-	if a_temp -key then jump j_input_none
-	a_playerSpeedX += va
-	a_temp := c_maxSpeed
-	a_temp += va
-	if a_playerSpeedX == a_temp then a_playerSpeedX := c_maxSpeed
+	if a_temp -key then jump j_input_save
+	a_playerSpeedX := c_horizontalSpeed
 	a_playerDirection := 1
-	jump j_input_save
-
-: j_input_none
-	# if neither left or right are pressed, slow down
-	if a_playerSpeedX == 0  then jump j_input_save
-
-	va := c_groundDecelerate
-	vb := c_airDecelerate
-	if a_playerSpeedX < 128 begin
-		if a_playerJumpAvailable == 2 then a_playerSpeedX -= va
-		if a_playerJumpAvailable != 2 then a_playerSpeedX -= vb
-		if a_playerSpeedX > 128 then a_playerSpeedX := 0
-	end
-	if a_playerSpeedX > 128 begin
-		if a_playerJumpAvailable == 2 then a_playerSpeedX += va
-		if a_playerJumpAvailable != 2 then a_playerSpeedX += vb
-		if a_playerSpeedX < 128 then a_playerSpeedX := 0
-	end
 
 : j_input_save
 	i := player
@@ -440,11 +418,11 @@
 
 	# spear gravity
 	i := spear1
-	load v4
+	load v6
 	a_spearSpeedY += c_spearGravityStrength
 	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
 	i := spear1
-	save v4
+	save v5
 
 	pop
 ;
@@ -456,29 +434,32 @@
 #  Collision Detection
 #
 
-:alias a_spriteX           v7
-:alias a_spriteY           v8
-:alias a_spriteSpeedX      v9
-:alias a_spriteSpeedY      v9
-:alias a_spriteTableOffset va
+:alias a_spriteX           v0
+:alias a_spriteY           v1
+:alias a_spriteSpeedX      v2
+:alias a_spriteSpeedY      v3
+:alias a_spriteTableOffset v4
 
 : spriteTable
 	i := amy
-	sprite a_spriteX a_spriteY 3
+	sprite a_temp a_spriteY 3
 	pop
 	return
 
 	i := spear
-	sprite a_spriteX a_spriteY 1
+	sprite a_temp a_spriteY 1
 	pop
 	return
 ;
 
 : f_checkCollision_drawSprite
+
 	push
+	a_temp := v0
 	v0 <<= a_spriteTableOffset
 	v0 <<= v0
 	v0 <<= v0
+
 	jump0 spriteTable
 ;
 
@@ -489,33 +470,23 @@
 	i := player
 	load v6
 
-	v7 := a_playerX
-	v8 := a_playerY
-	v9 := a_playerSpeedX
-	va := 0
+	
 	f_checkCollisionH_detectCollision
 
-	a_playerX := v7
-	a_playerY := v8
-	a_playerSpeedX := v9
+
 	i := player
 	save v6
 
 	# check spear collisions
 	i := spear1
-	load v4
+	load v5
 
-	v7 := a_spearX
-	v8 := a_spearY
-	v9 := a_spearSpeedX
-	va := 1
+	
 	f_checkCollisionH_detectCollision
-
-	a_spearX := v7
-	a_spearY := v8
-	a_spearSpeedX := v9
+	
+	
 	i := spear1
-	save v4
+	save v5
 	pop
 ;
 
@@ -525,10 +496,10 @@
 	#   it collides. if it ever does, revert back one position and exit.
 	#
 	# input parameters:
-	#   v7 -> a_spriteX
-	#   v8 -> a_spriteY
-	#   v9 -> a_spriteSpeedX
-	#   va -> a_spriteTableOffset
+	#   v0 -> a_spriteX
+	#   v1 -> a_spriteY
+	#   v2 -> a_spriteSpeedX
+	#   v4 -> a_spriteTableOffset
 
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
@@ -566,6 +537,7 @@
 ;
 
 : f_checkCollisionH_checkStep
+	#a_temp := -1
 	# sets vf to 1 if the player has hit a step, else sets vf to 0
 	# assumes player position is loaded into a_playerX and a_playerY and
 	# player direction is stored in a_temp
@@ -582,6 +554,8 @@
 	#   - this reference to a_playerJumpAvailable is the only reason
 	#     the arguments for collision detection start at v7...
 	if a_playerJumpAvailable != 2 then jump j_checkCollisionH_checkStep_false
+
+
 
 	# draw dot on ground at player's foot
 	#   va differs based on direction to check left or right
@@ -617,33 +591,21 @@
 	i := player
 	load v6
 
-	v7 := a_playerX
-	v8 := a_playerY
-	v9 := a_playerSpeedY
-	va := 0
+	
 	f_checkCollisionV_detectCollision
 
-	a_playerX := v7
-	a_playerY := v8
-	a_playerSpeedY := v9
+	
 	i := player
 	save v6
 
 	# check spear collisions
 	i := spear1
-	load v4
+	load v5
 	if a_spearActive != 1 then jump j_checkCollisionV_return
 
-	v7 := a_spearX
-	v8 := a_spearY
-	v9 := a_spearSpeedY
-	va := 1
+	
 	f_checkCollisionV_detectCollision
-	a_temp   := vf
-	a_spearX := v7
-	a_spearY := v8
-	a_spearSpeedY := v9
-
+	
 	# if the spear wraps around vertically, destroy it
 	if a_spearY < 64 then jump j_checkCollisionV_spearSlide
 	a_spearActive := 0
@@ -660,7 +622,7 @@
 
 : j_checkCollisionV_spearSave
 	i := spear1
-	save v4
+	save v5
 
 : j_checkCollisionV_return
 	pop
@@ -674,10 +636,10 @@
 	#   sets vf to 0 if there is no collision, sets vf to 1 if there is
 	#
 	# input parameters:
-	#   v7 -> a_spriteX
-	#   v8 -> a_spriteY
-	#   v9 -> a_spriteSpeedY
-	#   va -> a_spriteTableOffset
+	#   v0 -> a_spriteX
+	#   v1 -> a_spriteY
+	#   v3 -> a_spriteSpeedY
+	#   v4 -> a_spriteTableOffset
 	:alias a_partialDY         vb
 
 	# a_temp is the direction the player is traveling
@@ -710,9 +672,9 @@
 		a_spriteY += a_temp
 		f_checkCollision_drawSprite
 		if vf != 0 begin
-			if a_spriteTableOffset == 0 begin
+			#if a_spriteTableOffset == 0 begin
 				if a_temp == 1 then a_playerJumpAvailable := 2
-			end
+			#end
 			a_spriteSpeedY := 0
 			f_checkCollision_drawSprite
 			a_spriteY -= a_temp
@@ -750,30 +712,6 @@
 	delay := vf
 ;
 
-: f_clearSprites
-	# undraw all dynamic sprites before the screen scroll
-	i := player
-	load a_playerX - a_playerY
-	f_drawAmy
-
-	i := spear1
-	load a_spearX - a_spearY
-	# only need to update spears that aren't stuck
-	if a_spearSpeedX != 0 then f_drawSpear
-;
-
-: f_redrawSprites
-	# redraws all dynamic sprites after the screen scroll
-	i := player
-	load a_playerX - a_playerY
-	f_drawAmy
-
-	i := spear1
-	load a_spearX - a_spearY
-	# only need to update spears that aren't stuck
-	if a_spearActive == 1 then f_drawSpear
-;
-
 : f_scroll
 	# scrolls exactly one row
 	# a bit inefficient but I like how it looks when you ascend faster than the scrolling
@@ -789,7 +727,7 @@
 	a_temp    := 0
 	loop
 		f_selectSpear
-		load v4
+		load v5
 
 		a_spearY += 1
 		if a_spearY > 63 then a_spearActive := 0
@@ -797,7 +735,7 @@
 
 		f_selectSpear
 		v0 := a_temp1
-		save v4
+		save v5
 
 		a_temp += 4
 		a_counter += -1
