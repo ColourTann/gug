@@ -48,6 +48,15 @@
 : playerJumpAvailable
 	0
 
+: f_drawAmy
+	# this function does NOT use push/pop because that affects vf and
+	# drawing is used for collision detection. it instead relies on
+	# a_playerX and a_playerY being set appropriately by the calling
+	# function
+	i := amy
+	sprite a_playerX a_playerY 3
+;
+
 
 #################################
 #
@@ -119,6 +128,10 @@
 	0
 
 : f_drawSpear
+	# this function does NOT use push/pop because that affects vf and
+	# drawing is used for collision detection. it instead relies on
+	# a_playerX and a_playerY being set appropriately by the calling
+	# function
 	i := spear
 	sprite a_spearX a_spearY 1
 ;
@@ -247,6 +260,34 @@
 	0
 : jumpKeyReleased
 	1
+
+: f_jumpKeyPressed
+	push
+
+	v0 := 1
+	v1 := 0
+	i  := jumpKeyData
+	save v1
+
+	pop
+;
+
+: f_jumpKeyReleased
+	push
+
+	i := jumpKeyData
+	load v1
+
+	if v0 != 1 then jump f_jumpKeyReleased_return
+
+	v0 := 0
+	v1 := 1
+	i := jumpKeyData
+	save v1
+
+: f_jumpKeyReleased_return
+	pop
+;
 
 
 #################################
@@ -387,40 +428,52 @@
 	pop
 ;
 
-: f_jumpKeyPressed
+: f_gravity
 	push
 
-	v0 := 1
-	v1 := 0
-	i  := jumpKeyData
-	save v1
+	# player gravity
+	i := player
+	load v6
+	a_playerSpeedY += c_gravityStrength
+	i := player
+	save v6
+
+	# spear gravity
+	i := spear1
+	load v4
+	a_spearSpeedY += c_spearGravityStrength
+	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
+	i := spear1
+	save v4
 
 	pop
 ;
 
-: f_jumpKeyReleased
-	push
 
-	i := jumpKeyData
-	load v1
 
-	if v0 != 1 then jump f_jumpKeyReleased_return
+#################################
+#
+#  Collision Detection
+#
 
-	v0 := 0
-	v1 := 1
-	i := jumpKeyData
-	save v1
-
-: f_jumpKeyReleased_return
-	pop
-;
-
-# this function does NOT use push/pop because that affects vf and
-# drawing is used for collision detection. it instead relies on
-# a_playerX and a_playerY being set appropriately by the calling function
-: f_drawAmy
+: spriteTable
 	i := amy
-	sprite a_playerX a_playerY 3
+	sprite a_spriteX a_spriteY 3
+	pop
+	return
+
+	i := spear
+	sprite a_spriteX a_spriteY 1
+	pop
+	return
+;
+
+: f_checkCollision_drawSprite
+	push
+	v0 <<= a_spriteTableOffset
+	v0 <<= v0
+	v0 <<= v0
+	jump0 spriteTable
 ;
 
 : f_checkCollisionH
@@ -516,29 +569,29 @@
 
 	# store x-offset from player origin to check foot collision
 	#   (based on direction player is moving)
-	if a_temp ==  1 then v2 :=  0
-	if a_temp == -1 then v2 := -1
+	if a_temp ==  1 then a_temp1 :=  0
+	if a_temp == -1 then a_temp1 := -1
 
 	# only do stepping logic is player is on the ground
+	#   - this reference to a_playerJumpAvailable is the only reason
+	#     the arguments for collision detection start at v7...
 	if a_playerJumpAvailable != 2 then jump j_checkCollisionH_checkStep_false
 
 	# draw dot on ground at player's foot
 	#   va differs based on direction to check left or right
-	v0 := a_spriteX
-	v0 += v2
-	v1 := a_spriteY
-	v1 += 2
+	a_spriteX += a_temp1
+	a_spriteY += 2
 	i  := dot
-	sprite v0 v1 1
-	sprite v0 v1 1
+	sprite a_spriteX a_spriteY 1
+	sprite a_spriteX a_spriteY 1
 
 	# player has hit a wall that does not connect to the ground
 	if vf != 0 then jump j_checkCollisionH_checkStep_false
 
 	# draw dot 1 higher
-	v1 += -1
-	sprite v0 v1 1
-	sprite v0 v1 1
+	a_spriteY += -1
+	sprite a_spriteX a_spriteY 1
+	sprite a_spriteX a_spriteY 1
 
 	# the ground the player is walking into is two blocks high
 	if vf == 0 then jump j_checkCollisionH_checkStep_false
@@ -549,47 +602,6 @@
 
 : j_checkCollisionH_checkStep_false
 	vf := 0
-;
-
-: f_checkCollision_drawSprite
-	push
-	v0 <<= a_spriteTableOffset
-	v0 <<= v0
-	v0 <<= v0
-	jump0 spriteTable
-;
-
-: spriteTable
-	i := amy
-	sprite a_spriteX a_spriteY 3
-	pop
-	return
-
-	i := spear
-	sprite a_spriteX a_spriteY 1
-	pop
-	return
-;
-
-: f_gravity
-	push
-
-	# player gravity
-	i := player
-	load v6
-	a_playerSpeedY += c_gravityStrength
-	i := player
-	save v6
-
-	# spear gravity
-	i := spear1
-	load v4
-	a_spearSpeedY += c_spearGravityStrength
-	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
-	i := spear1
-	save v4
-
-	pop
 ;
 
 : f_checkCollisionV
