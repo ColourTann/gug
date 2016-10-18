@@ -72,7 +72,7 @@
 :alias a_monsterAll 		v7
 
 : monster1
-1 1 1 1 0 0 0 1
+0 0 0 0 0 0 0 0
 
 : monster2
 0 0 0 0 0 0 0 0
@@ -90,48 +90,118 @@
 	0b1011011
 	0b1001000
 
+: f_spawnMonster
+
+	a_monsterX := random 0b11111111
+	a_monsterY := 0
+	a_monsterDX := random 0b00000010
+	a_monsterDX += -1
+	a_monsterDY := 1
+	a_monsterActive := 1
+	a_temp1 := 7
+	i := monster1
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster1
+		save a_monsterAll
+		i := monster1
+		f_drawMonster
+		jump f_spawnMonsterDone
+	end
+	i := monster2
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster2
+		save a_monsterAll
+		i := monster2
+		f_drawMonster
+		jump f_spawnMonsterDone
+	end
+	i := monster3
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster3
+		save a_monsterAll
+		i := monster3
+		f_drawMonster
+		jump f_spawnMonsterDone
+	end
+	: f_spawnMonsterDone
+;
+
 
 : f_tickMonsters
 	i := monster1
 	f_tickMonster
 	i := monster1
 	save a_monsterAll
-	#i := monster2
-	#f_tickMonster
-	#i := monster3
-	#f_tickMonster
-	
+	i := monster2
+	f_tickMonster
+	i := monster2
+	save a_monsterAll
+	i := monster3
+	f_tickMonster
+	i := monster3
+	save a_monsterAll
+;
 
+: f_drawAllMonsters
+	i := monster1
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
+	i := monster2
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
 ;
 
 : f_tickMonster
 	load a_monsterAll
 	if a_monsterActive == 0 then return
-	#if a_monsterY > 64 then jump f_deactivateMonster
+	if a_monsterY > 64 then jump f_deactivateMonster
 	f_drawMonster
-	a_monsterX += a_monsterDX
-	a_monsterY += a_monsterDY
+	a_temp := random 0b00000011
+	if a_temp == 0 then a_monsterX += a_monsterDX
+	if a_temp == 1 then a_monsterY += a_monsterDY
 	f_drawMonster
+	f_checkMonsterPosition
 ;
 
 : f_moveAllMonstersUp
 	i := monster1
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_2
 	a_monsterY += 1
 	i := monster1
 	save a_monsterAll
 
+	: j_moveAllMonstersUp_2
 	i := monster2
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_3
 	a_monsterY += 1
 	i := monster2
 	save a_monsterAll
 
+	: j_moveAllMonstersUp_3
 	i := monster3
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_end
 	a_monsterY += 1
 	i := monster3
 	save a_monsterAll
+
+	: j_moveAllMonstersUp_end
+;
+
+: f_checkMonsterPosition
+	if a_monsterY < 54 then ;
+	a_monsterActive := 0
 ;
 
 
@@ -422,8 +492,10 @@
 	hires
 	f_setup
 	f_drawAmy
+	
 	loop
-		
+		a_temp := random 0b00011111
+		if a_temp == 0 then f_spawnMonster
 		f_tickMonsters
 		f_tickSpears
 		f_tickPlayer
@@ -446,6 +518,11 @@
 	a_playerX := 49
 	i := player
 	save a_playerY
+
+	#f_drawAllMonsters
+
+	i := player
+	load a_playerY
 ;
 
 : f_delayFPS
@@ -791,13 +868,13 @@
 	# scrolls exactly one row
 	# a bit inefficient but I like how it looks when you ascend faster than the scrolling
 	push
-
+	f_moveAllMonstersUp
 	i := player
 	load a_playerY
 	a_playerY += 1
 	i := player
 	save a_playerY
-	f_moveAllMonstersUp
+	
 	a_counter := 3
 	a_temp    := 0
 	loop
@@ -816,10 +893,16 @@
 		a_counter += -1
 	if a_counter != 0 then again
 
+
+	
+
 	plane 3
 	scroll-down 1
 	plane 1
 	f_drawMap
+
+	
+
 
 	pop
 ;
