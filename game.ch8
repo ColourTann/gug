@@ -52,6 +52,100 @@
 	sprite a_playerX a_playerY 3
 ;
 
+#################################
+#
+#  Monsters
+#
+
+
+
+:const c_maxMonsters 3
+
+:alias a_monsterX 			v0
+:alias a_monsterY 			v1
+:alias a_monsterDX 			v2
+:alias a_monsterDY 			v3
+:alias a_monsterType 		v4
+:alias a_monsterCooldown 	v5
+:alias a_monsterSpecial 	v6
+:alias a_monsterActive 		v7
+:alias a_monsterAll 		v7
+
+: monster1
+1 1 1 1 0 0 0 1
+
+: monster2
+0 0 0 0 0 0 0 0
+
+: monster3
+0 0 0 0 0 0 0 0
+
+: monsterImage
+	0b0111100
+	0b1011010
+	0b1111110
+	0b1000010
+	0b1111110
+	0b1111110
+	0b1011011
+	0b1001000
+
+
+: f_tickMonsters
+	i := monster1
+	f_tickMonster
+	i := monster1
+	save a_monsterAll
+	#i := monster2
+	#f_tickMonster
+	#i := monster3
+	#f_tickMonster
+	
+
+;
+
+: f_tickMonster
+	load a_monsterAll
+	if a_monsterActive == 0 then return
+	#if a_monsterY > 64 then jump f_deactivateMonster
+	f_drawMonster
+	a_monsterX += a_monsterDX
+	a_monsterY += a_monsterDY
+	f_drawMonster
+;
+
+: f_moveAllMonstersUp
+	i := monster1
+	load a_monsterAll
+	a_monsterY += 1
+	i := monster1
+	save a_monsterAll
+
+	i := monster2
+	load a_monsterAll
+	a_monsterY += 1
+	i := monster2
+	save a_monsterAll
+
+	i := monster3
+	load a_monsterAll
+	a_monsterY += 1
+	i := monster3
+	save a_monsterAll
+;
+
+
+: f_deactivateMonster
+	a_monsterActive := 0
+;
+
+: f_drawMonster
+	plane 2
+	i := monsterImage
+	sprite a_monsterX a_monsterY 8
+	plane 1
+;
+
 
 #################################
 #
@@ -86,50 +180,69 @@
 	i := spear3	return
 
 : spear1
-: spear1Location
-: spear1X
-	0
-: spear1Y
-	0
-: spear1SpeedX
-	0
-: spear1SpeedY
-	0
-: spearType
-	1
-: spear1Active
-	0
+	0 0	0 0 1 0
 
 : spear2
-: spear2Location
-: spear2X
-	0
-: spear2Y
-	0
-: spear2SpeedX
-	0
-: spear2SpeedY
-	0
-: spear2Type
-	1
-: spear2Active
-	0
+	0 0	0 0 1 0
 
 : spear3
-: spear3Location
-: spear3X
-	0
-: spear3Y
-	0
+	0 0	0 0 1 0
 
-: spear3SpeedX
-	0
-: spear3SpeedY
-	0
-: spear3Type
-	1
-: spear3Active
-	0
+: f_tickSpears
+	f_spearGravity
+	f_checkSpearCollisionV
+	f_checkSpearCollisionH
+;
+
+: f_spearGravity
+	push
+	i := spear1
+	load v6
+	a_spearSpeedY += c_spearGravityStrength
+	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
+	i := spear1
+	save v5
+	pop
+;
+
+: f_checkSpearCollisionH
+	push
+	i := spear1
+	load v5
+	f_checkCollisionH_detectCollision
+	i := spear1
+	save v5
+	pop
+;
+
+: f_checkSpearCollisionV
+	push
+	i := spear1
+	load v5
+	if a_spearActive != 1 then jump j_checkCollisionV_return
+	f_checkCollisionV_detectCollision
+	
+	# if the spear wraps around vertically, destroy it
+	if a_spearY < 64 then jump j_checkCollisionV_spearSlide
+	a_spearActive := 0
+	f_drawSpear
+	jump j_checkCollisionV_spearSave
+
+: j_checkCollisionV_spearSlide
+	# if the spear "hits" the top of the screen via wraparound,
+	# it's fallen off and should be despawned
+	if a_temp == 0 then jump j_checkCollisionV_spearSave
+	if a_spearY != 63 then jump j_checkCollisionV_spearSave
+	a_spearActive := 0
+	f_drawSpear
+
+: j_checkCollisionV_spearSave
+	i := spear1
+	save v5
+
+: j_checkCollisionV_return
+	pop
+;
 
 : f_drawSpear
 	# this function does NOT use push/pop because that affects vf and
@@ -298,6 +411,8 @@
 ;
 
 
+
+
 #################################
 #
 #  Game Loop
@@ -308,12 +423,13 @@
 	f_setup
 	f_drawAmy
 	loop
-		f_checkScrolling
-		f_gravity
-		f_checkCollisionV
-		f_input
-		f_checkCollisionH
+		
+		f_tickMonsters
+		f_tickSpears
+		f_tickPlayer
+		
 		f_tickCooldowns
+		f_checkScrolling
 		f_delayFPS
 	again
 ;
@@ -332,6 +448,15 @@
 	save a_playerY
 ;
 
+: f_delayFPS
+	# delay loop to lock framerate and prevent flicker
+	loop
+		vf := delay
+		if vf != 0 then again
+	vf := 3
+	delay := vf
+;
+
 : f_checkScrolling
 	push
 	i := player
@@ -344,6 +469,15 @@
 
 	pop
 ;
+
+: f_tickPlayer
+	f_playerGravity
+	f_checkPlayerCollisionV
+	f_input
+	f_checkPlayerCollisionH
+;
+
+
 
 : f_input
 	push
@@ -409,26 +543,17 @@
 	pop
 ;
 
-: f_gravity
+: f_playerGravity
 	push
-
-	# player gravity
 	i := player
 	load v6
 	a_playerSpeedY += c_gravityStrength
 	i := player
 	save v6
-
-	# spear gravity
-	i := spear1
-	load v6
-	a_spearSpeedY += c_spearGravityStrength
-	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
-	i := spear1
-	save v5
-
 	pop
 ;
+
+
 
 
 
@@ -466,32 +591,17 @@
 	jump0 spriteTable
 ;
 
-: f_checkCollisionH
+: f_checkPlayerCollisionH
 	push
-
-	# check player collisions
 	i := player
 	load v6
-
-	
 	f_checkCollisionH_detectCollision
-
-
 	i := player
 	save v6
-
-	# check spear collisions
-	i := spear1
-	load v5
-
-	
-	f_checkCollisionH_detectCollision
-	
-	
-	i := spear1
-	save v5
 	pop
 ;
+
+
 
 : f_checkCollisionH_detectCollision
 	# collide slowly
@@ -587,47 +697,16 @@
 	vf := 0
 ;
 
-: f_checkCollisionV
+: f_checkPlayerCollisionV
 	push
 
-	# check player collisions
 	i := player
 	load v6
-
-	
-	f_checkCollisionV_detectCollision
-
-	
+	f_checkCollisionV_detectCollision	
 	i := player
 	save v6
 
 	# check spear collisions
-	i := spear1
-	load v5
-	if a_spearActive != 1 then jump j_checkCollisionV_return
-
-	
-	f_checkCollisionV_detectCollision
-	
-	# if the spear wraps around vertically, destroy it
-	if a_spearY < 64 then jump j_checkCollisionV_spearSlide
-	a_spearActive := 0
-	f_drawSpear
-	jump j_checkCollisionV_spearSave
-
-: j_checkCollisionV_spearSlide
-	# if the spear "hits" the top of the screen via wraparound,
-	# it's fallen off and should be despawned
-	if a_temp == 0 then jump j_checkCollisionV_spearSave
-	if a_spearY != 63 then jump j_checkCollisionV_spearSave
-	a_spearActive := 0
-	f_drawSpear
-
-: j_checkCollisionV_spearSave
-	i := spear1
-	save v5
-
-: j_checkCollisionV_return
 	pop
 ;
 
@@ -706,14 +785,7 @@
 	pop
 ;
 
-: f_delayFPS
-	# delay loop to lock framerate and prevent flicker
-	loop
-		vf := delay
-		if vf != 0 then again
-	vf := 3
-	delay := vf
-;
+
 
 : f_scroll
 	# scrolls exactly one row
@@ -725,7 +797,7 @@
 	a_playerY += 1
 	i := player
 	save a_playerY
-
+	f_moveAllMonstersUp
 	a_counter := 3
 	a_temp    := 0
 	loop
