@@ -106,7 +106,7 @@
 
 : f_spawnMonster
 
-	a_monsterX := random 0b00111111
+	a_monsterX := random 0b01111111
 	a_monsterY := 0
 	a_monsterDX := random 0b00000010
 	a_monsterDX += -1
@@ -119,7 +119,6 @@
 	if a_temp == 0 begin
 		i := monster1
 		save a_monsterAll
-		i := monster1
 		f_drawMonster
 		jump f_spawnMonsterDone
 	end
@@ -470,7 +469,7 @@
 :alias a_currentChunkIndex 		v7
 :alias a_specialWidth 			v8
 :alias a_specialHeight			v9
-
+:alias a_levelDataAll			v9
 : dot # used for single pixel collisions
 	0b1
 
@@ -551,13 +550,13 @@
 	f_drawAmy
 	
 	loop
-		a_temp := random 0b00011111
+		a_temp := random 0b00111111
 		if a_temp == 0 then f_spawnMonster
 		f_tickMonsters
 		f_tickSpears
 		f_tickPlayer
 		
-		f_tickCooldowns
+		
 		f_checkScrolling
 		f_delayFPS
 	again
@@ -565,6 +564,7 @@
 
 : f_setup 
 	# draw a bunch of map and setup player starting position
+	a_counter := 0
 	loop
 		f_scroll
 		a_counter += 1
@@ -609,6 +609,19 @@
 	f_checkPlayerCollisionV
 	f_input
 	f_checkPlayerCollisionH
+	f_tickCooldowns
+	f_checkDeath
+;
+
+: f_checkDeath
+	i := player
+	load a_playerAllData
+	plane 2
+	f_drawAmy
+	if vf == 1 then f_lose
+	f_drawAmy
+	plane 1
+	if a_playerY > 60 then f_lose
 ;
 
 
@@ -1160,16 +1173,19 @@
 		a_fillX := a_bgX
 		a_fillX -= a_temp2
 		a_counter := a_specialWidth
+		plane 1
 		loop
 
 			i := pixel
 			sprite a_fillX a_fillY 1
-			if vf != 0 begin
+			sprite a_fillX a_fillY 1
+			if vf == 0 begin
 				plane 2
 				sprite a_fillX a_fillY 1
 				plane 1
+				sprite a_fillX a_fillY 1
 			end
-			sprite a_fillX a_fillY 1
+			
 
 			a_fillX += 1
 			a_counter += -1
@@ -1186,6 +1202,42 @@
 
 : pixel
 0b10000000
+
+: f_lose
+	# gotta reset *everything* here
+	i := zeroes
+	load va
+	i := player
+	save a_playerAllData
+	i := monster1
+	save a_monsterAll
+	i := monster2
+	save a_monsterAll
+	i := monster3
+	save a_monsterAll
+	i := spear1
+	save a_spearAllData
+	i := spear2
+	save a_spearAllData
+	i := spear3
+	save a_spearAllData
+	i := level
+	save a_levelDataAll
+	v0 := 3
+	i := currentChunkExit
+	save v0
+	v0 := -1
+	i := chunkLeftToDraw
+	save v0
+	plane 3
+	clear
+	plane 1
+	f_setup
+
+;
+
+: zeroes
+0 0 0 0 0 0 0 0 0 0
 
 #################################
 #
