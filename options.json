@@ -7,7 +7,7 @@
 "buzzColor":"#284720",
 "quietColor":"#000000",
 "shiftQuirks":false,
-"loadStoreQuirks":false,
+"loadStoreQuirks":true,
 "vfOrderQuirks":false,
 "enableXO":true
 }

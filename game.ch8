@@ -152,7 +152,6 @@
 	f_tickMonsterSpecial
 	i := monster1
 	save a_monsterAll
-	i := monster1
 	f_tickMonster
 	i := monster1
 	save a_monsterAll
@@ -161,7 +160,6 @@
 	f_tickMonsterSpecial
 	i := monster2
 	save a_monsterAll
-	i := monster2
 	f_tickMonster
 	i := monster2
 	save a_monsterAll
@@ -171,7 +169,6 @@
 	f_tickMonsterSpecial
 	i := monster3
 	save a_monsterAll
-	i := monster3
 	f_tickMonster
 	i := monster3
 	save a_monsterAll
