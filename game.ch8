@@ -69,30 +69,44 @@
 :alias a_monsterCooldown 	v5
 :alias a_monsterSpecial 	v6
 :alias a_monsterActive 		v7
-:alias a_monsterAll 		v7
+:alias a_monsterFrame 		v8
+:alias a_monsterAll 		v8
 
 : monster1
-0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
 
 : monster2
-0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
 
 : monster3
-0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
 
-: monsterImage
-	0b0111100
-	0b1011010
-	0b1111110
-	0b1000010
-	0b1111110
-	0b1111110
-	0b1011011
-	0b1001000
+: monsterImages
+
+: batFrame1
+	0b0010100
+	0b1011101
+	0b0111110
+	0b0011100
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: batFrame2
+	0b0010100
+	0b0011100
+	0b0111110
+	0b1011101
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+		
 
 : f_spawnMonster
 
-	a_monsterX := random 0b11111111
+	a_monsterX := random 0b00111111
 	a_monsterY := 0
 	a_monsterDX := random 0b00000010
 	a_monsterDX += -1
@@ -135,12 +149,27 @@
 
 : f_tickMonsters
 	i := monster1
+	f_tickMonsterSpecial
+	i := monster1
+	save a_monsterAll
+	i := monster1
 	f_tickMonster
 	i := monster1
+	save a_monsterAll
+
+	i := monster2
+	f_tickMonsterSpecial
+	i := monster2
 	save a_monsterAll
 	i := monster2
 	f_tickMonster
 	i := monster2
+	save a_monsterAll
+
+
+	i := monster3
+	f_tickMonsterSpecial
+	i := monster3
 	save a_monsterAll
 	i := monster3
 	f_tickMonster
@@ -160,17 +189,39 @@
 	if a_monsterActive == 1 then f_drawMonster
 ;
 
+: f_tickMonsterSpecial
+	load a_monsterAll
+	a_temp := v0
+	v0 <<= a_monsterType
+	jump0 monsterSpecialTicks
+;	
+
 : f_tickMonster
 	load a_monsterAll
 	if a_monsterActive == 0 then return
-	if a_monsterY > 64 then jump f_deactivateMonster
 	f_drawMonster
 	a_temp := random 0b00000011
-	if a_temp == 0 then a_monsterX += a_monsterDX
+	if a_temp < 2 then a_monsterX += a_monsterDX
 	if a_temp == 1 then a_monsterY += a_monsterDY
+	a_monsterFrame += 1
+	if a_monsterFrame == 4 then a_monsterFrame := 0
 	f_drawMonster
 	f_checkMonsterPosition
 ;
+
+: monsterSpecialTicks
+	jump f_tickBat
+
+
+: f_tickBat
+	a_monsterX := a_temp
+	a_temp := a_monsterX
+	i := playerX
+	load a_temp1 - a_temp1
+	a_monsterDX := 1
+	if a_temp > a_temp1 then a_monsterDX := -1
+;
+
 
 : f_moveAllMonstersUp
 	i := monster1
@@ -200,7 +251,7 @@
 ;
 
 : f_checkMonsterPosition
-	if a_monsterY < 54 then ;
+	if a_monsterY < 59 then ;
 	a_monsterActive := 0
 ;
 
@@ -211,7 +262,16 @@
 
 : f_drawMonster
 	plane 2
-	i := monsterImage
+	i := monsterImages
+	a_temp <<= a_monsterType
+	a_temp1 >>= a_monsterFrame
+	a_temp += a_temp1
+	a_temp <<= a_temp
+	a_temp <<= a_temp
+	a_temp <<= a_temp
+	
+	i += a_temp
+	
 	sprite a_monsterX a_monsterY 8
 	plane 1
 ;
