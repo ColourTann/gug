@@ -2,6 +2,7 @@
 :const c_doubleJumpHeight -8
 :const c_horizontalSpeed   1
 :const c_gravityStrength   2
+:const c_spearCooldown 12
 
 :alias a_counter    vd
 :alias a_temp 		vc
@@ -292,7 +293,6 @@
 :const c_spearGravityStrength 1
 :const c_spearInitialX        5
 :const c_spearInitialY        -3
-:const c_spearCooldown        5  #  2 seconds @ 20 fps
 
 :alias a_spearX      v0
 :alias a_spearY      v1
@@ -302,8 +302,13 @@
 :alias a_spearActive v5
 :alias a_spearAllData v5
 
+
+
 : spear
 	0b111
+
+: spearActive
+	0
 
 : spearCount
 	0
@@ -435,11 +440,9 @@
 	# save new spear as spear 1
 	i := spear1
 	save v5
-
-	# set the spear cooldown
-	i  := spearCooldown
-	v0 := c_spearCooldown
-	save v0
+	i := spearCooldown
+	a_temp := c_spearCooldown
+	save a_temp - a_temp
 
 : j_throwSpear_fail
 	pop
@@ -467,6 +470,13 @@
 	pop
 ;
 
+: f_rearmSpear
+	push
+	v0 := 0
+	i := spearActive
+	save v0
+	pop
+;
 
 #################################
 #
@@ -626,6 +636,14 @@
 	f_checkDeath
 ;
 
+: f_tickCooldowns
+	i := spearCooldown
+	load v0
+	if v0 == 0 then ;
+	v0 += -1
+	save v0
+;
+
 : f_checkDeath
 	i := player
 	load a_playerAllData
@@ -637,8 +655,6 @@
 	plane 1
 ;
 
-
-
 : f_input
 	push
 	i := player
@@ -649,10 +665,15 @@
 	a_temp := 6 # E
 	if a_temp -key then jump j_input_jump
 
-	# don't throw a spear if it's still on cooldown
+	# don't throw a spear if it's still active
+	i := spearActive
+	load a_temp - a_temp
+	if a_temp == 1 then jump j_input_jump
+
+	# don't throw spear if it's on cooldown
 	i := spearCooldown
-	load va - va
-	if va != 0 then jump j_input_jump
+	load a_temp - a_temp
+	if a_temp != 0 then jump j_input_jump
 
 	f_throwSpear
 	jump j_input_jump
@@ -834,7 +855,9 @@
 			f_checkCollision_drawSprite # undraw
 			a_spriteX -= a_temp # revert position
 			f_checkCollision_drawSprite # redraw
-			a_spearActive := 0 # deactivate and leave to caller to save
+			f_rearmSpear
+			a_spearSpeedX := 0 
+			a_spearSpeedY := 0 # stop spear and leave to caller to save
 			;
 		end
 		f_checkCollision_drawSprite # undraw
@@ -846,10 +869,11 @@
 			f_checkCollision_drawSprite #undraw 
 			i := spear1
 			save a_spearAllData
-			
 			f_drawAllMonsters # undraw monsters in plane 1
 			f_checkWhichMonster
-			a_spearActive := 0 # deactivate
+			a_spearSpeedX := 0 
+			a_spearSpeedY := 0 # stop spear and leave to caller to save
+			f_rearmSpear
 			;						
 		end
 		f_drawAllMonsters # undraw monsters in plane 1
@@ -1060,20 +1084,6 @@
 : j_checkCollisionV_detectCollision_true
 	vf := 1
 ;
-
-: f_tickCooldowns
-	push
-
-	i := spearCooldown
-	load v0
-	if v0 != 0 then v0 += -1
-	i := spearCooldown
-	save v0
-
-	pop
-;
-
-
 
 : f_scroll
 	# scrolls exactly one row
@@ -1371,6 +1381,9 @@
 	save v0
 	v0 := -1
 	i := chunkLeftToDraw
+	save v0
+	v0 := 0
+	i := spearActive
 	save v0
 	plane 3
 	clear
