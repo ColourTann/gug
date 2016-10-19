@@ -8,6 +8,8 @@
 :alias a_temp1   	vb
 :alias a_temp2   	va
 
+: lostGame
+0
 
 #################################
 #
@@ -105,7 +107,7 @@
 		
 
 : f_spawnMonster
-
+	plane 2
 	a_monsterX := random 0b01111111
 	a_monsterY := 0
 	a_monsterDX := random 0b00000010
@@ -143,6 +145,7 @@
 		jump f_spawnMonsterDone
 	end
 	: f_spawnMonsterDone
+	plane 1
 ;
 
 
@@ -174,6 +177,7 @@
 ;
 
 : f_drawAllMonsters
+	push
 	i := monster1
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
@@ -183,6 +187,7 @@
 	i := monster3
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
+	pop
 ;
 
 : f_tickMonsterSpecial
@@ -195,6 +200,7 @@
 : f_tickMonster
 	load a_monsterAll
 	if a_monsterActive == 0 then return
+	plane 2
 	f_drawMonster
 	a_temp := random 0b00000011
 	if a_temp < 2 then a_monsterX += a_monsterDX
@@ -203,6 +209,7 @@
 	if a_monsterFrame == 4 then a_monsterFrame := 0
 	f_drawMonster
 	f_checkMonsterPosition
+	plane 1
 ;
 
 : monsterSpecialTicks
@@ -218,6 +225,15 @@
 	if a_temp > a_temp1 then a_monsterDX := -1
 ;
 
+: f_hitBySpear
+	
+	a_monsterActive := 0
+	save a_monsterAll
+	plane 2
+	f_drawMonster
+	
+	plane 1
+;
 
 : f_moveAllMonstersUp
 	i := monster1
@@ -247,8 +263,7 @@
 ;
 
 : f_checkMonsterPosition
-	if a_monsterY < 59 then ;
-	a_monsterActive := 0
+	if a_monsterY > 57 then a_monsterActive := 0
 ;
 
 
@@ -257,7 +272,6 @@
 ;
 
 : f_drawMonster
-	plane 2
 	i := monsterImages
 	a_temp <<= a_monsterType
 	a_temp1 >>= a_monsterFrame
@@ -265,11 +279,8 @@
 	a_temp <<= a_temp
 	a_temp <<= a_temp
 	a_temp <<= a_temp
-	
 	i += a_temp
-	
 	sprite a_monsterX a_monsterY 8
-	plane 1
 ;
 
 
@@ -280,8 +291,8 @@
 
 :const c_spearGravityStrength 1
 :const c_spearInitialX        5
-:const c_spearInitialY        -4
-:const c_spearCooldown        40  #  2 seconds @ 20 fps
+:const c_spearInitialY        -3
+:const c_spearCooldown        5  #  2 seconds @ 20 fps
 
 :alias a_spearX      v0
 :alias a_spearY      v1
@@ -315,6 +326,9 @@
 	0 0	0 0 1 0
 
 : f_tickSpears
+	i := spear1
+	load a_spearAllData
+	if a_spearActive == 0 then ;
 	f_spearGravity
 	f_checkSpearCollisionV
 	f_checkSpearCollisionH
@@ -334,10 +348,10 @@
 : f_checkSpearCollisionH
 	push
 	i := spear1
-	load v5
-	f_checkCollisionH_detectCollision
+	load a_spearAllData
+	f_checkCollisionH_detectCollision_spearVariant
 	i := spear1
-	save v5
+	save a_spearAllData
 	pop
 ;
 
@@ -546,9 +560,7 @@
 
 : main
 	hires
-	f_setup
-	f_drawAmy
-	
+	f_reset	
 	loop
 		a_temp := random 0b00111111
 		if a_temp == 0 then f_spawnMonster
@@ -559,6 +571,7 @@
 		
 		f_checkScrolling
 		f_delayFPS
+		f_checkLossFlag
 	again
 ;
 
@@ -577,7 +590,7 @@
 	save a_playerY
 
 	#f_drawAllMonsters
-
+	f_drawAmy
 	i := player
 	load a_playerY
 ;
@@ -618,10 +631,10 @@
 	load a_playerAllData
 	plane 2
 	f_drawAmy
-	if vf == 1 then f_lose
+	if vf == 1 then f_setLossFlag
+	if a_playerY > 60 then f_setLossFlag
 	f_drawAmy
 	plane 1
-	if a_playerY > 60 then f_lose
 ;
 
 
@@ -794,6 +807,134 @@
 			f_checkCollision_drawSprite
 		end
 	if a_counter != 0 then again
+;
+
+: f_checkCollisionH_detectCollision_spearVariant
+	# collide slowly
+	#   undraw sprite and redraw one pixel in the x direction and see if
+	#   it collides. if it ever does, revert back one position and exit.
+	#
+	# input parameters:
+	#   v0 -> a_spriteX
+	#   v1 -> a_spriteY
+	#   v2 -> a_spriteSpeedX
+	#   v4 -> a_spriteTableOffset
+
+	if a_spriteSpeedX == 0  then return
+	if a_spriteSpeedX < 128 then a_temp :=  1
+	if a_spriteSpeedX > 128 then a_temp := -1
+
+	a_counter := a_spriteSpeedX
+	loop	
+		f_checkCollision_drawSprite # undraw
+		a_counter -= a_temp
+		a_spriteX += a_temp
+		f_checkCollision_drawSprite # redraw
+		if vf == 1 begin
+			f_checkCollision_drawSprite # undraw
+			a_spriteX -= a_temp # revert position
+			f_checkCollision_drawSprite # redraw
+			a_spearActive := 0 # deactivate and leave to caller to save
+			;
+		end
+		f_checkCollision_drawSprite # undraw
+		f_drawAllMonsters # draw monsters in plane 1
+		f_checkCollision_drawSprite # redraw spear
+
+		if vf == 1 begin
+			#collided with an enemy
+			f_checkCollision_drawSprite #undraw 
+			i := spear1
+			save a_spearAllData
+			
+			f_drawAllMonsters # undraw monsters in plane 1
+			f_checkWhichMonster
+			a_spearActive := 0 # deactivate
+			;						
+		end
+		f_drawAllMonsters # undraw monsters in plane 1
+		
+
+	if a_counter != 0 then again
+;
+
+: f_checkWhichMonster
+	push
+
+	
+	i := monster1
+	load a_monsterAll
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_checkCollision_drawSprite
+	if vf == 1 begin
+		i := monster1
+		load a_monsterAll
+		f_drawMonster
+		i := monster1
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_checkCollision_drawSprite # undraw
+	i := monster1
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	i := monster2
+	load a_monsterAll
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_checkCollision_drawSprite
+	if vf == 1 begin
+		i := monster2
+		load a_monsterAll
+		f_drawMonster
+		i := monster2
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_checkCollision_drawSprite # undraw
+	i := monster2
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	i := monster3
+	load a_monsterAll
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_checkCollision_drawSprite
+	if vf == 1 begin
+		i := monster3
+		load a_monsterAll
+		f_drawMonster
+		i := monster3
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_checkCollision_drawSprite # undraw
+	i := monster3
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	
+
+	pop
+;
+
+: f_successfulHit
+	i := spear1
+	load a_spearAllData
+	f_checkCollision_drawSprite
+	pop
 ;
 
 : f_checkCollisionH_checkStep
@@ -1203,7 +1344,7 @@
 : pixel
 0b10000000
 
-: f_lose
+: f_reset
 	# gotta reset *everything* here
 	i := zeroes
 	load va
@@ -1223,6 +1364,8 @@
 	save a_spearAllData
 	i := level
 	save a_levelDataAll
+	i := lostGame
+	save v0
 	v0 := 3
 	i := currentChunkExit
 	save v0
@@ -1233,7 +1376,18 @@
 	clear
 	plane 1
 	f_setup
+;
 
+: f_setLossFlag
+	i := lostGame
+	v0 := 1
+	save v0
+;
+
+: f_checkLossFlag
+	i := lostGame
+	load a_temp - a_temp
+	if a_temp == 1 then jump f_reset
 ;
 
 : zeroes
