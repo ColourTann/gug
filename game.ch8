@@ -42,10 +42,7 @@
 #  Monsters
 #
 
-:const c_maxMonsters 3
-
-: activeMonsters
-0
+: activeMonsters 0 # currently used to skip over calculations if there are no monsters
 
 :alias a_monsterX 			v0
 :alias a_monsterY 			v1
@@ -67,6 +64,13 @@
 
 : monster3
 0 0 0 0 0 0 0 0 0 0
+
+: upBatWaiting
+	0b0001000
+	0b0011100
+	0b0011100
+	0b0011100
+	0b0010100
 
 : monsterImages
 
@@ -116,13 +120,9 @@
 	i := downBat ;
 	i := upBat ;
 
-
-
-
 : f_drawMonster
 	i := monsterImages
 	i += a_monsterFrame
-	
 	sprite a_monsterX a_monsterY 8
 ;
 
@@ -173,6 +173,9 @@
 	a_monsterActive := 1
 	a_monsterFrame := 0
 	a_monsterFrameInt := 0
+	a_monsterSpecial := 0
+	a_monsterDY := 0
+	a_monsterDX := 0
 	a_temp1 := 7
 	i := monster1
 	i += a_temp1
@@ -212,6 +215,8 @@
 
 : f_tickMonsters
 	i := monster1
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_2
 	f_tickMonsterSpecial
 	i := monster1
 	save a_monsterAll
@@ -219,7 +224,10 @@
 	i := monster1
 	save a_monsterAll
 
+	: j_tickMonsters_2
 	i := monster2
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_3
 	f_tickMonsterSpecial
 	i := monster2
 	save a_monsterAll
@@ -227,7 +235,10 @@
 	i := monster2
 	save a_monsterAll
 
+	: j_tickMonsters_3
 	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_end
 	f_tickMonsterSpecial
 	i := monster3
 	save a_monsterAll
@@ -235,6 +246,7 @@
 	i := monster3
 	save a_monsterAll
 
+	: j_tickMonsters_end
 	f_countMonsters
 ;
 
@@ -254,6 +266,7 @@
 ;
 
 : monsterSpecialTicks
+	jump f_tickDownBat
 	jump f_tickUpBat
 
 : f_tickMonsterSpecial
@@ -263,7 +276,57 @@
 	jump0 monsterSpecialTicks
 ;	
 
+# currently you need to set "a_monsterX := a_temp" because v0 is used to jump here
+: f_tickDownBat
+	a_monsterX := a_temp
+	i := playerX
+	load a_temp1 - a_temp1
+	a_monsterDX := 1
+	# bats fly down and towards the player
+	if a_monsterX > a_temp1 then a_monsterDX := -1
+	a_monsterDY := 1
+
+	# but they fly weirdly and jaggedy
+	a_temp := random 0b00000001
+	if a_temp != 0 then a_monsterDX := 0
+	if a_temp != 1 then a_monsterDY := 0
+;
+
 : f_tickUpBat
+	a_monsterX := a_temp
+	if a_monsterSpecial == 0 begin
+		# upbats start in waiting mode and must be drawn like that
+		# if we ever get a constructor for enemies, this code should go there
+		a_monsterSpecial := 1
+		plane 2
+		f_drawMonster
+		
+		i := upBatWaiting
+		sprite a_monsterX a_monsterY 5
+	end
+	
+	if a_monsterSpecial == 1 begin
+		a_monsterDX := 0
+		a_monsterFrameInt := 0
+		if a_monsterY == 50 begin
+			# once the player has moved up enough past, upbats start chasing
+			a_monsterSpecial := 2
+			plane 2
+			i := upBatWaiting
+			sprite a_monsterX a_monsterY 5
+			f_drawMonster
+		end
+		;
+	end
+
+	# kill if they reach top of the screen
+	if a_monsterY == 0 begin
+		plane 2
+		f_drawMonster
+		a_monsterActive := 0
+	end
+
+	# this is just code copied from downbats but with DY reversed
 	a_monsterX := a_temp
 	a_temp := a_monsterX
 	i := playerX
@@ -271,7 +334,7 @@
 	a_monsterDX := 1
 	# bats fly down and towards the player
 	if a_temp > a_temp1 then a_monsterDX := -1
-	a_monsterDY := 1
+	a_monsterDY := -1
 
 	# but they fly weirdly and jaggedy
 	a_temp := random 0b00000001
@@ -311,13 +374,13 @@
 : f_tickMonster
 	# simply adds dx and dy to monster position and redraws the correct frame
 	load a_monsterAll
+
 	if a_monsterActive == 0 then return
+		
 	plane 2
 	f_drawMonsterNice
 	a_monsterX += a_monsterDX
 	a_monsterY += a_monsterDY
-
-	
 
 	a_monsterFrameInt += 1
 	if a_monsterFrameInt == 4 then a_monsterFrameInt := 0
@@ -1265,9 +1328,9 @@
 		i += a_temp
 		a_bgX += 8
 	if a_bgX != 128 then again
-
+	push
 	f_drawSpecials
-
+	pop
 	a_chunkLeftToDraw += -1
 
 	i := level
@@ -1328,6 +1391,7 @@
 	jump f_drawSpire
 	jump f_drawStructure
 	jump f_drawPool
+	jump f_spawn0
 	jump f_spawn1
 ;
 
@@ -1385,10 +1449,17 @@
 	if a_fillY != a_specialHeight then again
 ;
 
-: f_spawn1
+: f_spawn0
 	a_monsterX := a_temp
 	a_monsterY := 0
 	a_monsterType := 0
+	f_spawnMonster
+;
+
+: f_spawn1
+	a_monsterX := a_temp
+	a_monsterY := 0
+	a_monsterType := 1
 	f_spawnMonster
 ;
 
@@ -1996,7 +2067,7 @@
 	
 : chunk_lc0
 	64
-	0 0 151 0 133 0 8 4 0 6 7 5 0 0 110 0 
+	0 0 151 0 164 0 8 4 0 6 7 5 0 0 110 0 
 	0xff 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0xff
 	0xff 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x7f
 	0xff 0x80 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x3f
@@ -2064,7 +2135,7 @@
 	
 : chunk_lc1
 	64
-	0 0 151 0 133 0 8 4 0 6 7 5 0 0 110 0 
+	0 0 151 0 164 0 8 4 0 6 7 5 0 0 110 0 
 	0xff 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0xff
 	0xff 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x7f
 	0xff 0x80 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x3f
