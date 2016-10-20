@@ -44,6 +44,9 @@
 
 :const c_maxMonsters 3
 
+: activeMonsters
+0
+
 :alias a_monsterX 			v0
 :alias a_monsterY 			v1
 :alias a_monsterDX 			v2
@@ -212,6 +215,23 @@
 	f_tickMonster
 	i := monster3
 	save a_monsterAll
+
+	f_countMonsters
+;
+
+: f_countMonsters
+	a_temp := 0
+	i := monster1
+	load a_monsterAll
+	a_temp += a_monsterActive
+	i := monster2
+	load a_monsterAll
+	a_temp += a_monsterActive
+	i := monster3
+	load a_monsterAll
+	a_temp += a_monsterActive
+	i := activeMonsters
+	save a_temp - a_temp
 ;
 
 : monsterSpecialTicks
@@ -596,8 +616,9 @@
 		f_tickSpears
 		f_tickPlayer
 		f_checkScrolling
-		f_delayFPS
 		f_checkLossFlag
+		f_delayFPS
+		
 	again
 ;
 
@@ -833,14 +854,18 @@
 	if a_counter != 0 then again
 ;
 
+
+
+
 : f_detectSpearCollisionH
 	# similar to the above method but we need to see if it hits enemies (and we don't need to step)
 
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
 	if a_spriteSpeedX > 128 then a_temp := -1
-
+	#f_getActiveMonsters
 	a_counter := a_spriteSpeedX
+	
 	loop	
 		f_drawSprite # undraw
 		a_counter -= a_temp
@@ -857,6 +882,11 @@
 			;
 		end
 
+		i := activeMonsters
+		load a_temp2 - a_temp2
+		#if a_temp2 == 0 then jump j_detectSpearCollisionH_loopEnd
+
+		
 		# if it did not collide with terrain, we draw monsters and see if it now collides
 
 		f_drawSprite # undraw
@@ -878,6 +908,7 @@
 		end
 		f_drawAllMonsters # undraw monsters in plane 1
 		
+		: j_detectSpearCollisionH_loopEnd
 
 	if a_counter != 0 then again
 ;
