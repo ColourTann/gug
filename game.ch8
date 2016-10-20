@@ -55,21 +55,23 @@
 :alias a_monsterCooldown 	v5
 :alias a_monsterSpecial 	v6
 :alias a_monsterActive 		v7
-:alias a_monsterFrame 		v8
-:alias a_monsterAll 		v8
+:alias a_monsterFrame 		v8 # i offset
+:alias a_monsterFrameInt	v9 # internal coutner
+:alias a_monsterAll 		v9
 
 : monster1
-0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
 
 : monster2
-0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
 
 : monster3
-0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0 0
 
 : monsterImages
 
-: batFrame1
+: downBat
+: downBatFrame1
 	0b0010100
 	0b1011101
 	0b0111110
@@ -79,7 +81,7 @@
 	0b0000000
 	0b0000000
 
-: batFrame2
+: downBatFrame2
 	0b0010100
 	0b0011100
 	0b0111110
@@ -88,31 +90,52 @@
 	0b0000000
 	0b0000000
 	0b0000000
-		
+
+: upBat
+: upBatFrame1
+	0b0010100
+	0b1011101
+	0b0111110
+	0b0011100
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: upBatFrame2
+	0b0010100
+	0b0011100
+	0b0111110
+	0b1011101
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: monsterImageJumpTable
+	i := downBat ;
+	i := upBat ;
+
+
+
 
 : f_drawMonster
 	i := monsterImages
-	a_temp <<= a_monsterType
-	a_temp1 >>= a_monsterFrame
-	a_temp += a_temp1
-	a_temp <<= a_temp
-	a_temp <<= a_temp
-	a_temp <<= a_temp
-	i += a_temp
+	i += a_monsterFrame
+	
 	sprite a_monsterX a_monsterY 8
 ;
 
 : f_drawMonsterNice
 	push
 	i := monsterImages
-	a_temp <<= a_monsterType
-	a_temp1 >>= a_monsterFrame
-	a_temp += a_temp1
-	a_temp <<= a_temp
-	a_temp <<= a_temp
-	a_temp <<= a_temp
-	i += a_temp
+	i += a_monsterFrame
+
+
 	a_temp := 64
+
+
+
 	a_temp -= a_monsterY
 	if a_temp == 0 then jump j_drawMonster_end
 	if a_temp > 65 then jump j_drawMonster_end
@@ -149,6 +172,7 @@
 	plane 2
 	a_monsterActive := 1
 	a_monsterFrame := 0
+	a_monsterFrameInt := 0
 	a_temp1 := 7
 	i := monster1
 	i += a_temp1
@@ -230,7 +254,7 @@
 ;
 
 : monsterSpecialTicks
-	jump f_tickBat
+	jump f_tickUpBat
 
 : f_tickMonsterSpecial
 	load a_monsterAll
@@ -239,7 +263,7 @@
 	jump0 monsterSpecialTicks
 ;	
 
-: f_tickBat
+: f_tickUpBat
 	a_monsterX := a_temp
 	a_temp := a_monsterX
 	i := playerX
@@ -270,6 +294,7 @@
 ;
 
 : f_drawAllMonstersNice
+	# currently unused!
 	push
 	i := monster1
 	load a_monsterAll
@@ -291,8 +316,18 @@
 	f_drawMonsterNice
 	a_monsterX += a_monsterDX
 	a_monsterY += a_monsterDY
-	a_monsterFrame += 1
-	if a_monsterFrame == 4 then a_monsterFrame := 0
+
+	
+
+	a_monsterFrameInt += 1
+	if a_monsterFrameInt == 4 then a_monsterFrameInt := 0
+
+	a_temp2 >>= a_monsterFrameInt
+	a_monsterFrame <<= a_monsterType
+	a_monsterFrame += a_temp2
+	a_monsterFrame <<= a_monsterFrame
+	a_monsterFrame <<= a_monsterFrame
+	a_monsterFrame <<= a_monsterFrame
 	f_drawMonsterNice
 	f_checkMonsterPosition
 	plane 1
