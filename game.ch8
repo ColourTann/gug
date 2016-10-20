@@ -98,9 +98,9 @@
 : upBat
 : upBatFrame1
 	0b0010100
-	0b1011101
-	0b0111110
 	0b0011100
+	0b0111110
+	0b1011101
 	0b0001000
 	0b0000000
 	0b0000000
@@ -108,9 +108,9 @@
 
 : upBatFrame2
 	0b0010100
-	0b0011100
-	0b0111110
 	0b1011101
+	0b0111110
+	0b0011100
 	0b0001000
 	0b0000000
 	0b0000000
@@ -298,11 +298,11 @@
 		# upbats start in waiting mode and must be drawn like that
 		# if we ever get a constructor for enemies, this code should go there
 		a_monsterSpecial := 1
-		plane 2
-		f_drawMonster
+		#plane 2
+		#f_drawMonster
 		
-		i := upBatWaiting
-		sprite a_monsterX a_monsterY 5
+		#i := upBatWaiting
+		#sprite a_monsterX a_monsterY 5
 	end
 	
 	if a_monsterSpecial == 1 begin
@@ -311,10 +311,10 @@
 		if a_monsterY == 50 begin
 			# once the player has moved up enough past, upbats start chasing
 			a_monsterSpecial := 2
-			plane 2
-			i := upBatWaiting
-			sprite a_monsterX a_monsterY 5
-			f_drawMonster
+			#plane 2
+			#i := upBatWaiting
+			#sprite a_monsterX a_monsterY 5
+			#f_drawMonster
 		end
 		;
 	end
@@ -505,7 +505,7 @@
 	i := spear1
 	load v5
 	if a_spearActive != 1 then jump j_checkCollisionV_return
-	f_checkCollisionV_detectCollision
+	f_checkSpearCollisionV_detectCollision
 	
 	# if the spear wraps around vertically, destroy it
 	if a_spearY < 64 then jump j_checkCollisionV_spearSlide
@@ -771,12 +771,12 @@
 : f_checkDeath
 	i := player
 	load a_playerAllData
-	plane 2
-	f_drawAmy
-	if vf == 1 then f_setLossFlag
+	#plane 2
+	#f_drawAmy
+	#if vf == 1 then f_setLossFlag
 	if a_playerY > 60 then f_setLossFlag
-	f_drawAmy
-	plane 1
+	#f_drawAmy
+	#plane 1
 ;
 
 : f_input
@@ -916,10 +916,17 @@
 
 	a_counter := a_spriteSpeedX
 	loop	
+		plane 1
 		f_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
+		plane 2
 		f_drawSprite # redraw
+		if vf != 0 then f_setLossFlag
+		f_drawSprite # redraw
+		plane 1
+		f_drawSprite # redraw
+
 		if vf != 0 begin
 			f_drawSprite
 
@@ -1178,10 +1185,21 @@
 	
 	if a_partialDY == 0 then jump j_checkCollisionV_detectCollision_false
 
-	loop	
+	loop
+		plane 1	
 		f_drawSprite
+		
 		a_partialDY -= a_temp
 		a_spriteY += a_temp
+
+		plane 2
+		f_drawSprite
+		if vf != 0 then f_setLossFlag
+		plane 2
+		f_drawSprite
+		
+
+		plane 1
 		f_drawSprite
 		if vf != 0 begin
 			#if a_spriteTableOffset == 0 begin
@@ -1201,6 +1219,46 @@
 
 : j_checkCollisionV_detectCollision_true
 	vf := 1
+;
+
+: f_checkSpearCollisionV_detectCollision
+	# copy of the above method for spears
+	
+	if a_spriteSpeedY < 128 begin
+		a_temp := 1
+		a_partialDY >>= a_spriteSpeedY
+		a_partialDY >>= a_partialDY
+	end 
+
+	if a_spriteSpeedY > 128 begin
+		a_temp := -1
+		a_partialDY >>= a_spriteSpeedY
+		a_partialDY >>= a_partialDY
+		a_partialDY += 0b11000000
+	end
+	
+	if a_partialDY == 0 then jump j_checkCollisionV_detectCollision_false
+
+	loop
+		plane 1	
+		f_drawSprite
+		
+		a_partialDY -= a_temp
+		a_spriteY += a_temp		
+
+		plane 1
+		f_drawSprite
+		if vf != 0 begin
+			#if a_spriteTableOffset == 0 begin
+				if a_temp == 1 then a_playerJumpAvailable := 2
+			#end
+			a_spriteSpeedY := 0
+			f_drawSprite
+			a_spriteY -= a_temp
+			f_drawSprite
+			jump j_checkCollisionV_detectCollision_true
+		end
+	if a_partialDY != 0 then again
 ;
 
 : f_scroll
@@ -1437,7 +1495,6 @@
 				plane 2
 				sprite a_fillX a_fillY 1
 				plane 1
-				sprite a_fillX a_fillY 1
 			end
 			
 
