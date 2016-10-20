@@ -433,13 +433,13 @@
 	push
 	i := player
 	load v6
-	f_checkCollisionH_detectCollision
+	f_playerSlowCollisionH
 	i := player
 	save v6
 	pop
 ;
 
-: f_checkCollisionH_detectCollision
+: f_playerSlowCollisionH
 	# collide slowly
 	#   undraw sprite and redraw one pixel in the x direction and see if
 	#   it collides. if it ever does, revert back one position and exit.
@@ -491,13 +491,6 @@
 		end
 	if a_counter != 0 then again
 ;
-
-
-
-
-
-
-
 
 
 : f_playerStepUpCheck
