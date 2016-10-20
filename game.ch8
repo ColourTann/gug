@@ -86,6 +86,7 @@
 	0b0000000
 	0b0000000
 		
+
 : f_drawMonster
 	i := monsterImages
 	a_temp <<= a_monsterType
@@ -96,6 +97,49 @@
 	a_temp <<= a_temp
 	i += a_temp
 	sprite a_monsterX a_monsterY 8
+;
+
+: f_drawMonsterNice
+	push
+	i := monsterImages
+	a_temp <<= a_monsterType
+	a_temp1 >>= a_monsterFrame
+	a_temp += a_temp1
+	a_temp <<= a_temp
+	a_temp <<= a_temp
+	a_temp <<= a_temp
+	i += a_temp
+	a_temp := 64
+	a_temp -= a_monsterY
+	if a_temp == 0 then jump j_drawMonster_end
+	if a_temp > 65 then jump j_drawMonster_end
+	if a_temp > 7 begin
+	 	sprite a_monsterX a_monsterY 8
+		jump j_drawMonster_end
+	end
+	a_temp2 := a_monsterX
+	v0 <<= a_temp
+	v0 <<= v0
+	
+	jump0 j_drawMonster_partial
+	: j_drawMonster_partial
+	0 0 0 0
+	sprite a_temp2 a_monsterY 1
+	jump j_drawMonster_end
+	sprite a_temp2 a_monsterY 2
+	jump j_drawMonster_end
+	sprite a_temp2 a_monsterY 3
+	jump j_drawMonster_end
+	sprite a_temp2 a_monsterY 4
+	jump j_drawMonster_end
+	sprite a_temp2 a_monsterY 5
+	jump j_drawMonster_end
+	sprite a_temp2 a_monsterY 6
+	jump j_drawMonster_end
+	sprite a_temp2 a_monsterY 7
+	
+	: j_drawMonster_end
+	pop
 ;
 
 : f_spawnMonster
@@ -210,17 +254,31 @@
 	pop
 ;
 
+: f_drawAllMonstersNice
+	push
+	i := monster1
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
+	i := monster2
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
+	pop
+;
+
 : f_tickMonster
 	# simply adds dx and dy to monster position and redraws the correct frame
 	load a_monsterAll
 	if a_monsterActive == 0 then return
 	plane 2
-	f_drawMonster
+	f_drawMonsterNice
 	a_monsterX += a_monsterDX
 	a_monsterY += a_monsterDY
 	a_monsterFrame += 1
 	if a_monsterFrame == 4 then a_monsterFrame := 0
-	f_drawMonster
+	f_drawMonsterNice
 	f_checkMonsterPosition
 	plane 1
 ;
@@ -260,7 +318,7 @@
 ;
 
 : f_checkMonsterPosition
-	if a_monsterY > 57 then a_monsterActive := 0
+	if a_monsterY > 63 then a_monsterActive := 0
 ;
 
 : f_deactivateMonster
