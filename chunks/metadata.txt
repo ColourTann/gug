@@ -18,5 +18,10 @@ N == 2
 N == 3
 21x3 # pit?
 
+cave{
+	
+	N == 4 : downbat
+}
+
 N == 4-7:
 probably enemies or upgrades? not implemented yet
