@@ -1115,12 +1115,7 @@
 : f_checkDeath
 	i := player
 	load a_playerAllData
-	#plane 2
-	#f_drawAmy
-	#if vf == 1 then f_setLossFlag
 	if a_playerY > 60 then f_setLossFlag
-	#f_drawAmy
-	#plane 1
 ;
 
 : f_input
