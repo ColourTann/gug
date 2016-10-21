@@ -368,9 +368,9 @@
 	# monster hit by a spear!
 	a_monsterActive := 0
 	save a_monsterAll
-	plane 2
+	
 	f_drawMonster
-	plane 1
+	
 ;
 
 : f_moveAllMonstersUp
@@ -839,15 +839,43 @@
 
 : f_checkSpearCollisionH
 	push
+
+	# first check if there are any active monster, if so we can skip the monster collision step
+	i := activeMonsters
+	load v0
+	if v0 == 0 then jump j_checkSpearCollisionH_terrain
+
+	# load up spear 1 data, set plane to 2
 	i := spear1
 	load a_spearAllData
-	f_spearSlowCollisionH
+	plane 2
+
+	# draw the spear in plane 2 and start collision method
+	f_drawSpear
+	f_spearSlowCollisionHMonsters
+	
+	# if it's now inactive (collided with monster) then skip to end
+	if a_spearActive == 0 then jump j_checkSpearCollisionH_end
+
+	
+	# set to plane 1 before checking terrain collisions
+	plane 1
+	
+	: j_checkSpearCollisionH_terrain
+
+	# reload old spear data (to reset to original position if monster collisions used)
+	i := spear1
+	load a_spearAllData
+	
+	f_spearSlowCollisionHTerrain
+	
+	: j_checkSpearCollisionH_end
 	i := spear1
 	save a_spearAllData
 	pop
 ;
 
-: f_spearSlowCollisionH
+: f_spearSlowCollisionHTerrain
 	# similar to the player slow collision
 	# but we don't need to check death
 	# and we do need to check hitting monsters
@@ -855,60 +883,75 @@
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
 	if a_spriteSpeedX > 128 then a_temp := -1
-	#f_getActiveMonsters
 	a_counter := a_spriteSpeedX
 	
 	loop	
+		
 		f_drawSprite # undraw
+		
 		a_counter -= a_temp
 		a_spriteX += a_temp
 		f_drawSprite # redraw
 		if vf == 1 begin
 			# collided with terrain!
+			
 			f_drawSprite # undraw
+			
 			a_spriteX -= a_temp # revert position
 			f_drawSprite # redraw
+			
 			f_rearmSpear
 			a_spriteSpeedX := 0 
 			a_spriteSpeedY := 0 # stop spear and leave to caller to save
+			a_spearActive := 0
 			;
-		end
+		end		
+	if a_counter != 0 then again
+;
 
-		i := activeMonsters
-		load a_temp2 - a_temp2
-		#if a_temp2 == 0 then jump j_detectSpearCollisionH_loopEnd
-
-		
-		# if it did not collide with terrain, we draw monsters and see if it now collides
-
+: f_spearSlowCollisionHMonsters
+	# if it did not collide with terrain, we draw monsters and see if it now collides
+	if a_spriteSpeedX == 0  then return
+	if a_spriteSpeedX < 128 then a_temp :=  1
+	if a_spriteSpeedX > 128 then a_temp := -1
+	a_counter := a_spriteSpeedX
+	
+	loop	
+				
 		f_drawSprite # undraw
-		f_drawAllMonsters # draw monsters in plane 1
-		f_drawSprite # redraw spear
+		a_counter -= a_temp
+		a_spriteX += a_temp
+		f_drawSprite # redraw
 
 		if vf == 1 begin
 			#collided with an enemy
 			f_drawSprite #undraw 
-			i := spear1
-			save a_spearAllData
-			f_drawAllMonsters # undraw monsters in plane 1
+			f_drawAllMonsters # undraw
 			f_checkWhichMonster
+			f_drawAllMonsters
+			# checkWhichMonster uses a_temp2 to flag whether it hit a monster or not
+			if a_temp2 == 0 then ;
+			i := spear1
+			load a_spearAllData
+			plane 1
+			f_drawSprite
 			a_spearSpeedX := 0 
 			a_spearSpeedY := 0 # stop spear and leave to caller to save
 			a_spearActive := 0
 			f_rearmSpear
 			;						
-		end
-		f_drawAllMonsters # undraw monsters in plane 1
-		
-		: j_detectSpearCollisionH_loopEnd
-
+		end		
 	if a_counter != 0 then again
+	f_drawSpear # undraw spear
+	
 ;
 
 : f_checkWhichMonster
+	a_temp2 := 1
 	# now we must check which monster the spear collided with
 	# lots of bad code!
 	push
+
 	i := monster1
 	load a_monsterAll
 	f_drawMonster
@@ -916,9 +959,6 @@
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
-		i := monster1
-		load a_monsterAll
-		f_drawMonster
 		i := monster1
 		load a_monsterAll
 		f_hitBySpear
@@ -937,9 +977,6 @@
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
-		i := monster2
-		load a_monsterAll
-		f_drawMonster
 		i := monster2
 		load a_monsterAll
 		f_hitBySpear
@@ -952,6 +989,7 @@
 	f_drawMonster #undraw
 
 	pop
+	a_temp2 := 0
 ;
 
 : f_successfulHit
