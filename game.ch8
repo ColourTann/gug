@@ -645,7 +645,6 @@
 :alias a_spearAllData v5
 
 : spear 0b111
-: spearActive 	0
 : spearCount 	0
 : spearCooldown	0
 : spearTable
@@ -653,7 +652,8 @@
 	i := spear2	return
 	i := spear3	return
 : spear1 
-	0 0	0 0 1 0
+	0 0	0 0 1 
+: spear1Active 0
 : spear2
 	0 0	0 0 1 0
 : spear3
@@ -745,7 +745,7 @@
 	i := spear3
 	load v5
 
-	if a_spearActive == 1 then f_drawSpear
+	if a_spearX != 0 then f_drawSpear
 
 	# push spears down the queue
 	i := spear2
@@ -758,14 +758,6 @@
 	i := spear2
 	save v5
 
-	pop
-;
-
-: f_rearmSpear
-	push
-	v0 := 0
-	i := spearActive
-	save v0
 	pop
 ;
 
@@ -900,8 +892,7 @@
 			
 			a_spriteX -= a_temp # revert position
 			f_drawSprite # redraw
-			
-			f_rearmSpear
+			a_spearActive := 0
 			a_spriteSpeedX := 0 
 			a_spriteSpeedY := 0 # stop spear and leave to caller to save
 			;
@@ -935,6 +926,7 @@
 			load a_spearAllData
 			plane 1
 			f_drawSprite
+			a_spearActive := 0
 			a_spearSpeedX := 0 
 			a_spearSpeedY := 0 # stop spear and leave to caller to save
 			;						
@@ -1165,7 +1157,7 @@
 	if a_temp -key then jump j_input_jump
 
 	# don't throw a spear if it's still active
-	i := spearActive
+	i := spear1Active
 	load a_temp - a_temp
 	if a_temp == 1 then jump j_input_jump
 
@@ -1253,7 +1245,7 @@
 		load v5
 
 		a_spearY += 1
-		if a_spearY > 63 then a_spearActive := 0
+		if a_spearY > 63 then a_spearX := 0
 		a_temp1 := v0
 
 		f_selectSpear
@@ -1530,9 +1522,6 @@
 	save v0
 	v0 := -1
 	i := chunkLeftToDraw
-	save v0
-	v0 := 0
-	i := spearActive
 	save v0
 	plane 3
 	clear
