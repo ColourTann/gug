@@ -1642,9 +1642,12 @@
 
 #################################
 #
-#   Audio
-#
-#
+#  Sounds
+#  Each sound is:
+#  - 1 byte header which detemines how long the audio is played for
+#  - 16 bytes of 1-bit audio data
+#  
+#  To use: set i to an audio label, call f_playAudio. [nukes ve and vf]
 #
 
 : audio_jump
@@ -1661,13 +1664,11 @@
 	0x55 0xAA 0x55 0xAA 0x55 0xAA 0x55 0xAA 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 
 : f_playAudio
-	
 	load vf - vf
 	ve := 1
 	i += ve
 	audio
 	buzzer := vf
-
 ;
 
 #################################
