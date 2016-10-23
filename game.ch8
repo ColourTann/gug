@@ -652,8 +652,12 @@
 	i := spear2	return
 	i := spear3	return
 : spear1 
-	0 0	0 0 1 
-: spear1Active 0
+	0 0	
+: spear1SpeedX
+	0 
+	0 1 
+: spear1Active 
+	0
 : spear2
 	0 0	0 0 1 0
 : spear3
@@ -677,7 +681,7 @@
 : f_tickSpears
 	i := spear1
 	load a_spearAllData
-	if a_spearActive == 0 then ;
+	if a_spearSpeedX == 0 then ;
 	f_spearGravity
 	f_checkSpearCollisionV
 	f_checkSpearCollisionH
@@ -747,7 +751,7 @@
 	i := spear3
 	load v5
 
-	if a_spearX != 0 then f_drawSpear
+	if a_spearActive != 0 then f_drawSpear
 
 	# push spears down the queue
 	i := spear2
@@ -767,7 +771,7 @@
 	push
 	i := spear1
 	load v5
-	if a_spearActive != 1 then jump j_checkCollisionV_return
+	if a_spearSpeedX == 0 then jump j_checkCollisionV_return
 	f_spearSlowCollisionV
 	
 	# if the spear wraps around vertically, destroy it
@@ -793,8 +797,7 @@
 ;
 
 : f_spearSlowCollisionV
-	# copy of the above method for spears
-	
+
 	if a_spriteSpeedY < 128 begin
 		a_temp := 1
 		a_partialDY >>= a_spriteSpeedY
@@ -894,7 +897,6 @@
 			
 			a_spriteX -= a_temp # revert position
 			f_drawSprite # redraw
-			a_spearActive := 0
 			a_spriteSpeedX := 0 
 			a_spriteSpeedY := 0 # stop spear and leave to caller to save
 			;
@@ -932,7 +934,6 @@
 	load a_spearAllData
 	plane 1
 	f_drawSprite
-	a_spearActive := 0
 	a_spearSpeedX := 0 
 	a_spearSpeedY := 0 # stop spear and leave to caller to save
 	i := audio_spear_hit_enemy
@@ -1159,8 +1160,8 @@
 	a_temp := 6 # E
 	if a_temp -key then jump j_input_jump
 
-	# don't throw a spear if it's still active
-	i := spear1Active
+	# don't throw a spear if it's still moving
+	i := spear1SpeedX
 	load a_temp - a_temp
 	if a_temp == 1 then jump j_input_jump
 
