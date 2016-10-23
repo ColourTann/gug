@@ -10,24 +10,34 @@ public class ImagePack {
 		File folder = new File(".");
 		File[] listOfFiles = folder.listFiles();
 		out = new BufferedWriter(new FileWriter("output.txt"));
-		System.out.print("Writing ");
 		for (int i = 0; i < listOfFiles.length; i++) {
-			if (listOfFiles[i].isFile()) {
-				String s = listOfFiles[i].getName();
-				if (s.contains(".png")){
-					System.out.print(s+"...");
-					octoConvert(listOfFiles[i]);
-				}
+			
+			if (listOfFiles[i].isDirectory()) {
+				File innerFolder = listOfFiles[i];
+				if(innerFolder.getName().equals("unused")) continue;
+				File[] innerList = innerFolder.listFiles();
+				System.out.println("Writing folder: "+innerFolder.getName());
+				System.out.println("----------------------");
+				System.out.print("|");
+				for (int j = 0; j<innerList.length;j++){
+					String s = innerList[j].getName();
+					if (s.contains(".png")){
+						System.out.print(s+"|");
+						octoConvert(innerFolder.getName(), innerList[j]);
+					}	
+				}	
+				System.out.println();
+				System.out.println("----------------------");
+				System.out.println();
+				
 
 			}
 		}
 		out.close();
-		System.out.println();
-		System.out.println();
 		System.out.println("Nice! All files written to output.txt");
 	}
 
-	public static void octoConvert(File target) throws IOException{
+	public static void octoConvert(String folderName, File target) throws IOException{
 		// handle arguments
 		
 		int spritew = 8;
@@ -69,7 +79,7 @@ public class ImagePack {
 		int data = 0;
 		
 
-		out.write(": chunk_"+basename);
+		out.write(": "+folderName+"_"+basename);
 		out.write("\n");
 		out.write("\t"+image.getHeight());
 		out.write("\n");
