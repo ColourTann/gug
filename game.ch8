@@ -726,6 +726,8 @@
 	jump j_throwSpear_fail
 
 : j_throwSpear_succeed
+	i := audio_spear_throw
+	f_playAudio
 	f_queue_spears
 	# save new spear as spear 1
 	i := spear1
@@ -855,8 +857,11 @@
 	f_spearSlowCollisionHMonsters
 	
 	# if it's now inactive (collided with monster) then skip to end
-	if a_spearActive == 0 then jump j_checkSpearCollisionH_end
-
+	if a_spearSpeedX == 0 begin
+		i := audio_spear_hit_enemy
+		f_playAudio
+		jump j_checkSpearCollisionH_end
+	end
 	
 	# set to plane 1 before checking terrain collisions
 	plane 1
@@ -1186,6 +1191,10 @@
 	if a_playerJumpAvailable == 1 then jump j_input_doubleJump
 
 	# if player has both jumps left...
+
+	i := audio_jump
+	f_playAudio
+
 	a_playerJumpAvailable := 1
 	a_playerSpeedY := c_jumpHeight
 	f_jumpKeyPressed
@@ -1196,7 +1205,8 @@
 	i := jumpKeyReleased
 	load va - va
 	if va == 0 then jump j_input_left
-
+	i := audio_double_jump
+	f_playAudio
 	a_playerJumpAvailable := 0
 	a_playerSpeedY := c_doubleJumpHeight
 	f_jumpKeyPressed
@@ -1626,6 +1636,38 @@
 	i := stack
 	i += ve
 	load v0 - vd
+;
+
+
+
+#################################
+#
+#   Audio
+#
+#
+#
+
+: audio_jump
+	2
+	0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00
+: audio_double_jump
+	1
+	0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+: audio_spear_throw
+	1
+	0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00
+: audio_spear_hit_enemy
+	3
+	0x55 0xAA 0x55 0xAA 0x55 0xAA 0x55 0xAA 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+
+: f_playAudio
+	
+	load vf - vf
+	ve := 1
+	i += ve
+	audio
+	buzzer := vf
+
 ;
 
 #################################

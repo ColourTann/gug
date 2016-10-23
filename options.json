@@ -4,7 +4,7 @@
 "fillColor":"#836b5b",
 "fillColor2":"#f42400",
 "blendColor":"#a42400",
-"buzzColor":"#284720",
+"buzzColor":"#000000",
 "quietColor":"#000000",
 "shiftQuirks":false,
 "loadStoreQuirks":true,
