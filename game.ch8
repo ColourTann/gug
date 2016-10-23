@@ -598,7 +598,7 @@
 		a_partialDY += 0b11000000
 	end
 	
-	if a_partialDY == 0 then jump j_checkCollisionV_detectCollision_false
+	if a_partialDY == 0 then jump j_playerSlowCollisionV_detectCollision_false
 	plane 2
 	f_drawSprite # setup so player is drawn in plane 3
 	plane 3
@@ -607,20 +607,20 @@
 		a_partialDY -= a_temp
 		a_spriteY += a_temp
 		f_drawSprite # redraw
-		if vf != 0 then jump j_checkCollisionV_detectCollision_true
+		if vf != 0 then jump j_playerSlowCollisionV_detectCollision_true
 	if a_partialDY != 0 then again
 	plane 2
 	f_drawSprite # undraw plane 2
 	plane 1
-: j_checkCollisionV_detectCollision_false
+: j_playerSlowCollisionV_detectCollision_false
 
 	return
 
-: j_checkCollisionV_detectCollision_true
+: j_playerSlowCollisionV_detectCollision_true
 	f_drawSprite # undraw
 	plane 2
 	f_drawSprite # test draw plane 2
-	if vf != 0 then jump j_checkCollisionV_death
+	if vf != 0 then jump j_playerSlowCollisionV_death
 	f_drawSprite # undraw
 	# terrain collision by process of elimination
 
@@ -631,7 +631,7 @@
 	f_drawSprite
 ;
 
-: j_checkCollisionV_death
+: j_playerSlowCollisionV_death
 	f_setLossFlag
 ;
 
@@ -654,6 +654,7 @@
 :alias a_spearActive v5
 :alias a_spearAllData v5
 
+: spearThrowRequested 0
 : spear 0b111
 : spearCount 	0
 : spearCooldown	0
@@ -689,6 +690,24 @@
 ;
 
 : f_tickSpears
+	i := spearThrowRequested
+	load a_temp - a_temp
+	if a_temp == 0 then jump j_tickSpears_tick
+	# spear throw was requested from input
+	# don't throw a spear if it's still moving
+	i := spear1SpeedX
+	load a_temp - a_temp
+	if a_temp != 0 then jump j_tickSpears_tick
+
+	# don't throw spear if it's on cooldown
+	i := spearCooldown
+	load a_temp - a_temp
+	if a_temp != 0 then jump j_tickSpears_tick
+
+	f_throwSpear
+
+	: j_tickSpears_tick
+
 	i := spear1
 	load a_spearAllData
 	if a_spearSpeedX == 0 then ;
@@ -732,7 +751,6 @@
 	a_spearSpeedY := c_spearInitialY
 	a_spearType := 1
 	a_spearActive := 1
-
 	f_drawSpear
 	if vf != 1 then jump j_throwSpear_succeed
 	# if the spear would spawn in a wall, we can't throw it
@@ -821,7 +839,7 @@
 		a_partialDY += 0b11000000
 	end
 	
-	if a_partialDY == 0 then jump j_checkCollisionV_detectCollision_false
+	if a_partialDY == 0 then jump j_spearSlowCollisionV_false
 
 	loop
 		plane 1	
@@ -833,16 +851,22 @@
 		plane 1
 		f_drawSprite
 		if vf != 0 begin
-			#if a_spriteTableOffset == 0 begin
-				if a_temp == 1 then a_playerJumpAvailable := 2
-			#end
-			a_spriteSpeedY := 0
-			f_drawSprite
-			a_spriteY -= a_temp
-			f_drawSprite
-			jump j_checkCollisionV_detectCollision_true
+			if a_temp == 1 then a_playerJumpAvailable := 2
+			jump j_spearSlowCollisionV_true
 		end
 	if a_partialDY != 0 then again
+	: j_spearSlowCollisionV_false
+;
+
+: j_spearSlowCollisionV_true
+	:breakpoint vcoll
+	a_spriteSpeedY := 0
+	a_spriteSpeedX := 0
+	f_drawSprite
+	:breakpoint post1
+	a_spriteY -= a_temp
+	f_drawSprite
+	:breakpoint post2
 ;
 
 : f_checkSpearCollisionH
@@ -1167,23 +1191,6 @@
 	load v6
 	a_playerSpeedX := 0
 
-: j_input_spear
-	a_temp := 6 # E
-	if a_temp -key then jump j_input_jump
-
-	# don't throw a spear if it's still moving
-	i := spear1SpeedX
-	load a_temp - a_temp
-	if a_temp != 0 then jump j_input_jump
-
-	# don't throw spear if it's on cooldown
-	i := spearCooldown
-	load a_temp - a_temp
-	if a_temp != 0 then jump j_input_jump
-
-	f_throwSpear
-	jump j_input_jump
-
 : j_input_jump
 	a_temp := 5 # W
 	if a_temp -key then jump j_input_jumpRelease
@@ -1221,13 +1228,20 @@
 	a_temp1 := c_horizontalSpeed
 	a_playerSpeedX -= a_temp1
 	a_playerDirection := 0
-	jump j_input_save
+	jump j_input_spear
 
 : j_input_right
 	a_temp := 9 # D
-	if a_temp -key then jump j_input_save
+	if a_temp -key then jump j_input_spear
 	a_playerSpeedX := c_horizontalSpeed
 	a_playerDirection := 1
+
+: j_input_spear
+	a_temp1 := 0
+	a_temp := 6 # E
+	if a_temp key then a_temp1 := 1
+	i := spearThrowRequested
+	save a_temp1 - a_temp1
 
 : j_input_save
 	i := player
@@ -1244,8 +1258,6 @@
 	save v6
 	pop
 ;
-
-
 
 : f_scroll
 	# scrolls exactly one row
