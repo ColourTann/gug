@@ -851,10 +851,6 @@
 	
 	# if it's now not moving (collided with monster) then skip to end
 	if a_spearSpeedX == 0 then jump j_checkSpearCollisionH_end
-		i := audio_spear_hit_enemy
-		f_playAudio
-		jump j_checkSpearCollisionH_end
-	end
 	
 	# set to plane 1 before checking terrain collisions
 	plane 1
@@ -872,6 +868,7 @@
 	save a_spearAllData
 	pop
 ;
+
 
 : f_spearSlowCollisionHTerrain
 	# similar to the player slow collision
@@ -911,34 +908,35 @@
 	if a_spriteSpeedX < 128 then a_temp :=  1
 	if a_spriteSpeedX > 128 then a_temp := -1
 	a_counter := a_spriteSpeedX
-	
 	loop	
-				
 		f_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
 		f_drawSprite # redraw
-
 		if vf == 1 begin
-			#collided with an enemy
-			f_drawSprite #undraw 
-			f_drawAllMonsters # undraw
-			f_checkWhichMonster
-			f_drawAllMonsters
-			# checkWhichMonster uses a_temp2 to flag whether it hit a monster or not
-			if a_temp2 == 0 then ;
-			i := spear1
-			load a_spearAllData
-			plane 1
-			f_drawSprite
-			a_spearActive := 0
-			a_spearSpeedX := 0 
-			a_spearSpeedY := 0 # stop spear and leave to caller to save
+			f_potentialMonsterCollision
 			;						
 		end		
 	if a_counter != 0 then again
 	f_drawSpear # undraw spear
-	
+;
+
+: f_potentialMonsterCollision
+	f_drawSprite #undraw 
+	f_drawAllMonsters # undraw
+	f_checkWhichMonster
+	f_drawAllMonsters
+	# checkWhichMonster uses a_temp2 to flag whether it hit a monster or not
+	if a_temp2 == 0 then ;
+	i := spear1
+	load a_spearAllData
+	plane 1
+	f_drawSprite
+	a_spearActive := 0
+	a_spearSpeedX := 0 
+	a_spearSpeedY := 0 # stop spear and leave to caller to save
+	i := audio_spear_hit_enemy
+	f_playAudio
 ;
 
 : f_checkWhichMonster
