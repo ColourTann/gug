@@ -455,43 +455,54 @@
 	if a_spriteSpeedX > 128 then a_temp := -1
 
 	a_counter := a_spriteSpeedX
+	plane 2
+	f_drawSprite # setup so the player is drawn in plane 3
+	plane 3
 	loop	
-		plane 1
 		f_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
-		plane 2
 		f_drawSprite # redraw
-		if vf != 0 then f_setLossFlag
-		f_drawSprite # redraw
-		plane 1
-		f_drawSprite # redraw
-
-		if vf != 0 begin
-			f_drawSprite
-
-			push
-			f_playerStepUpCheck
-			if vf == 1 begin
-				pop
-				jump j_checkCollisionH_detectCollision_step
-			end
-			pop
-
-			# if not a step, force the sprite back
-			a_spriteSpeedX := 0
-			a_spriteX -= a_temp
-			f_drawSprite
-			return
-
-			: j_checkCollisionH_detectCollision_step
-			# redraw player 1 higher
-			a_spriteY += -1
-			f_drawSprite
-		end
+		if vf != 0 then jump j_playerSlowCollisionH_collided
 	if a_counter != 0 then again
+	plane 2
+	f_drawSprite # undraw
+	plane 1
+;
+: j_playerSlowCollisionH_collided
+	# now have to decide between player or monster collision
+	f_drawSprite # undraw
+	plane 2
+	f_drawSprite # draw plane 2
+	if vf != 0 then jump j_playerSlowCollisionH_death # it's a monster/death collision!
+	f_drawSprite # undraw plane 2
+	# it's a terrain collision!
+
+	plane 1
+
+	push
+	f_playerStepUpCheck
+	if vf == 1 begin
+		pop
+		jump j_checkCollisionH_detectCollision_step
+	end
+	pop
+
+	# if not a step, force the sprite back
+	a_spriteSpeedX := 0
+	a_spriteX -= a_temp
+	f_drawSprite
+	return
+
+	: j_checkCollisionH_detectCollision_step
+	# redraw player 1 higher
+	a_spriteY += -1
+	f_drawSprite
 ;
 
+: j_playerSlowCollisionH_death
+	f_setLossFlag
+;
 
 : f_playerStepUpCheck
 	#a_temp := -1
@@ -588,41 +599,40 @@
 	end
 	
 	if a_partialDY == 0 then jump j_checkCollisionV_detectCollision_false
-
+	plane 2
+	f_drawSprite # setup so player is drawn in plane 3
+	plane 3
 	loop
-		plane 1	
-		f_drawSprite
-		
+		f_drawSprite # undraw
 		a_partialDY -= a_temp
 		a_spriteY += a_temp
-
-		plane 2
-		f_drawSprite
-		if vf != 0 then f_setLossFlag
-		plane 2
-		f_drawSprite
-		
-
-		plane 1
-		f_drawSprite
-		if vf != 0 begin
-			#if a_spriteTableOffset == 0 begin
-				if a_temp == 1 then a_playerJumpAvailable := 2
-			#end
-			a_spriteSpeedY := 0
-			f_drawSprite
-			a_spriteY -= a_temp
-			f_drawSprite
-			jump j_checkCollisionV_detectCollision_true
-		end
+		f_drawSprite # redraw
+		if vf != 0 then jump j_checkCollisionV_detectCollision_true
 	if a_partialDY != 0 then again
-
+	plane 2
+	f_drawSprite # undraw plane 2
+	plane 1
 : j_checkCollisionV_detectCollision_false
-	vf := 0
+
 	return
 
 : j_checkCollisionV_detectCollision_true
-	vf := 1
+	f_drawSprite # undraw
+	plane 2
+	f_drawSprite # test draw plane 2
+	if vf != 0 then jump j_checkCollisionV_death
+	f_drawSprite # undraw
+	# terrain collision by process of elimination
+
+	plane 1
+	if a_temp == 1 then a_playerJumpAvailable := 2
+	a_spriteSpeedY := 0
+	a_spriteY -= a_temp
+	f_drawSprite
+;
+
+: j_checkCollisionV_death
+	f_setLossFlag
 ;
 
 
@@ -936,6 +946,7 @@
 	f_drawSprite
 	a_spearSpeedX := 0 
 	a_spearSpeedY := 0 # stop spear and leave to caller to save
+	a_spearActive := 0
 	i := audio_spear_hit_enemy
 	f_playAudio
 ;
@@ -1080,8 +1091,8 @@
 	f_reset	
 	loop
 		f_tickMonsters
-		f_tickSpears
 		f_tickPlayer
+		f_tickSpears
 		f_checkScrolling
 		f_checkLossFlag
 		f_delayFPS
@@ -1163,7 +1174,7 @@
 	# don't throw a spear if it's still moving
 	i := spear1SpeedX
 	load a_temp - a_temp
-	if a_temp == 1 then jump j_input_jump
+	if a_temp != 0 then jump j_input_jump
 
 	# don't throw spear if it's on cooldown
 	i := spearCooldown
@@ -1254,7 +1265,7 @@
 		load v5
 
 		a_spearY += 1
-		if a_spearY > 63 then a_spearX := 0
+		if a_spearY > 63 then a_spearActive := 0
 		a_temp1 := v0
 
 		f_selectSpear
@@ -1503,6 +1514,10 @@
 0b11
 0b11
 0b11
+
+0b11
+0b11
+0b11 # duplicated for plane 3
 
 : pixel 0b10000000
 
