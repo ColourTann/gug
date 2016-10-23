@@ -859,14 +859,11 @@
 ;
 
 : j_spearSlowCollisionV_true
-	:breakpoint vcoll
 	a_spriteSpeedY := 0
 	a_spriteSpeedX := 0
 	f_drawSprite
-	:breakpoint post1
 	a_spriteY -= a_temp
 	f_drawSprite
-	:breakpoint post2
 ;
 
 : f_checkSpearCollisionH
