@@ -160,6 +160,9 @@
 		jump f_spawnMonsterDone
 	end
 
+	# no room for the monster, just return
+	;
+
 	: f_spawnMonsterDone
 	v0 <<= a_monsterType
 	v0 <<= v0
