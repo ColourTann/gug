@@ -290,7 +290,7 @@
 	; ;
 	# jungle
 	i := walkerSprites ;
-	; ;
+	i := shroomSprites ;
 	; ;  
 	; ;
 
@@ -302,7 +302,7 @@
 	; ;
 	# jungle
 	f_walkerInit ;
-	; ;
+	f_shroomInit ;
 	; ;
 	; ;
 
@@ -315,7 +315,7 @@
 	; ;
 	# jungle
 	f_walkerTick ;
-	; ;
+	f_shroomTick ;
 	; ;
 	; ;
 
@@ -327,7 +327,7 @@
 	; ;
 	# jungle
 	f_walkerHit ;
-	; ;
+	f_shroomHit ;
 	; ;
 	; ;
 
@@ -378,7 +378,6 @@
 : f_downBatHit
 	a_monsterActive := 0
 	save a_monsterAll
-	f_drawMonsterNice
 	i := audio_spearHitEnemy_bat
 	f_playAudio
 ;
@@ -461,7 +460,6 @@
 : f_upBatHit
 	a_monsterActive := 0
 	save a_monsterAll
-	f_drawMonsterNice
 	i := audio_spearHitEnemy_bat
 	f_playAudio
 ;
@@ -515,7 +513,122 @@
 : f_walkerHit
 	a_monsterActive := 0
 	save a_monsterAll
-	f_drawMonsterNice
+	i := audio_spearHitEnemy_bat
+	f_playAudio
+;
+
+########
+# shroom
+
+:const c_shroomWaitFrames 40
+:const c_shroomSporeFrames 8
+
+: shroomSprites
+: shroomIdle
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+: shroomSporing
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00111100
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00011000
+	0b01000010
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00100100
+	0b00000000
+	0b10000001
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b01000010
+	0b00000000
+	0b10011001
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b01000010
+	0b00011000
+	0b10101101
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b01101110
+	0b00110100
+	0b10011001
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b01011010
+	0b00011000
+
+
+: f_shroomInit
+;
+
+: f_shroomTick	
+	if a_monsterFrame == 0 begin
+		a_monsterSpecial += 1
+		if a_monsterSpecial == c_shroomWaitFrames begin
+			a_monsterSpecial := 0
+			a_monsterFrame := 1
+		end
+		;
+	end
+	if a_monsterFrame == c_shroomSporeFrames begin
+		a_monsterSpecial := 0
+		a_monsterFrame := 0
+		;
+	end
+	a_monsterFrame += 1
+;
+
+: f_shroomHit
 	i := audio_spearHitEnemy_bat
 	f_playAudio
 ;
@@ -1121,6 +1234,9 @@
 	if vf == 1 begin
 		i := monster1
 		load a_monsterAll
+		f_drawMonsterNice
+		i := monster1
+		load a_monsterAll
 		f_hitBySpear
 		f_successfulHit
 		;
@@ -1139,6 +1255,9 @@
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
+		i := monster2
+		load a_monsterAll
+		f_drawMonsterNice
 		i := monster2
 		load a_monsterAll
 		f_hitBySpear
@@ -1296,6 +1415,7 @@
 ;
 
 : f_tickPlayer
+	plane 1
 	f_playerGravity
 	f_checkPlayerCollisionV
 	f_input
