@@ -290,7 +290,7 @@
 	; ;
 	# jungle
 	i := walkerSprites ;
-	; ;
+	i := shroomSprites ;
 	; ;  
 	; ;
 
@@ -302,7 +302,7 @@
 	; ;
 	# jungle
 	f_walkerInit ;
-	; ;
+	f_shroomInit ;
 	; ;
 	; ;
 
@@ -315,7 +315,7 @@
 	; ;
 	# jungle
 	f_walkerTick ;
-	; ;
+	f_shroomTick ;
 	; ;
 	; ;
 
@@ -327,7 +327,7 @@
 	; ;
 	# jungle
 	f_walkerHit ;
-	; ;
+	f_shroomHit ;
 	; ;
 	; ;
 
@@ -378,7 +378,6 @@
 : f_downBatHit
 	a_monsterActive := 0
 	save a_monsterAll
-	f_drawMonsterNice
 	i := audio_spearHitEnemy_bat
 	f_playAudio
 ;
@@ -461,7 +460,6 @@
 : f_upBatHit
 	a_monsterActive := 0
 	save a_monsterAll
-	f_drawMonsterNice
 	i := audio_spearHitEnemy_bat
 	f_playAudio
 ;
@@ -515,7 +513,122 @@
 : f_walkerHit
 	a_monsterActive := 0
 	save a_monsterAll
-	f_drawMonsterNice
+	i := audio_spearHitEnemy_bat
+	f_playAudio
+;
+
+########
+# shroom
+
+:const c_shroomWaitFrames 40
+:const c_shroomSporeFrames 8
+
+: shroomSprites
+: shroomIdle
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+: shroomSporing
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00111100
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00011000
+	0b01000010
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00100100
+	0b00000000
+	0b10000001
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b01000010
+	0b00000000
+	0b10011001
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b01000010
+	0b00011000
+	0b10101101
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b01101110
+	0b00110100
+	0b10011001
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b01011010
+	0b00011000
+
+
+: f_shroomInit
+;
+
+: f_shroomTick	
+	if a_monsterFrame == 0 begin
+		a_monsterSpecial += 1
+		if a_monsterSpecial == c_shroomWaitFrames begin
+			a_monsterSpecial := 0
+			a_monsterFrame := 1
+		end
+		;
+	end
+	if a_monsterFrame == c_shroomSporeFrames begin
+		a_monsterSpecial := 0
+		a_monsterFrame := 0
+		;
+	end
+	a_monsterFrame += 1
+;
+
+: f_shroomHit
 	i := audio_spearHitEnemy_bat
 	f_playAudio
 ;
@@ -1001,17 +1114,23 @@
 	# load up spear 1 data, set plane to 2
 	i := spear1
 	load a_spearAllData
-	plane 2
-
-	# draw the spear in plane 2 and start collision method
-	f_drawSpear
-	f_spearSlowCollisionHMonsters
+	plane 1
 	
+	f_drawSpear #undraw plane 1
+	
+	plane 2
+	f_drawSpear # draw the spear in plane 2 and start collision method
+	f_spearSlowCollisionHMonsters
 	# if it's now not moving (collided with monster) then skip to end
 	if a_spearSpeedX == 0 then jump j_checkSpearCollisionH_end
 	
 	# set to plane 1 before checking terrain collisions
 	plane 1
+	
+	i := spear1
+	load a_spearAllData
+	f_drawSpear # redraw
+	
 	
 	: j_checkSpearCollisionH_terrain
 
@@ -1045,6 +1164,7 @@
 		a_counter -= a_temp
 		a_spriteX += a_temp
 		f_drawSprite # redraw
+		
 		if vf == 1 begin
 			# collided with terrain!
 			
@@ -1064,13 +1184,20 @@
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
 	if a_spriteSpeedX > 128 then a_temp := -1
+
 	a_counter := a_spriteSpeedX
+	
 	loop	
+		
 		f_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
 		f_drawSprite # redraw
 		if vf == 1 begin
+			f_drawSprite #undraw
+			i := spear1 
+			save a_spearAllData
+			
 			f_potentialMonsterCollision
 			;						
 		end		
@@ -1079,7 +1206,6 @@
 ;
 
 : f_potentialMonsterCollision
-	f_drawSprite #undraw 
 	f_drawAllMonsters # undraw
 	f_checkWhichMonster
 	f_drawAllMonsters
@@ -1087,8 +1213,6 @@
 	if a_temp2 == 0 then ;
 	i := spear1
 	load a_spearAllData
-	plane 1
-	f_drawSprite
 	a_spearSpeedX := 0 
 	a_spearSpeedY := 0 # stop spear and leave to caller to save
 	a_spearActive := 0
@@ -1102,11 +1226,15 @@
 
 	i := monster1
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_2
 	f_drawMonster
 	i := spear1
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
+		i := monster1
+		load a_monsterAll
+		f_drawMonsterNice
 		i := monster1
 		load a_monsterAll
 		f_hitBySpear
@@ -1118,13 +1246,18 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
+	: j_checkWhichMonster_2
 	i := monster2
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_end
 	f_drawMonster
 	i := spear1
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
+		i := monster2
+		load a_monsterAll
+		f_drawMonsterNice
 		i := monster2
 		load a_monsterAll
 		f_hitBySpear
@@ -1136,6 +1269,7 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
+	: j_checkWhichMonster_end
 	pop
 	a_temp2 := 0
 ;
@@ -1233,13 +1367,12 @@
 	hires
 	f_reset	
 	loop
-		f_tickMonsters
 		f_tickPlayer
 		f_tickSpears
+		f_tickMonsters		
 		f_checkScrolling
 		f_checkLossFlag
 		f_delayFPS
-		
 	again
 ;
 
@@ -1282,6 +1415,7 @@
 ;
 
 : f_tickPlayer
+	plane 1
 	f_playerGravity
 	f_checkPlayerCollisionV
 	f_input
@@ -1864,7 +1998,7 @@
 #
 
 : currentZone 
-1
+0
 
 : chunks
 
