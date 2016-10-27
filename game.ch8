@@ -316,70 +316,45 @@
 	# caverns
 	i := downBatSprites ;
 	i := upBatSprites ;
-	; ;
-	; ;
 	# jungle
 	i := walkerSprites ;
 	i := shroomSprites ;
-	; ;  
-	; ;
 	# sky
 	i := lightningSprites ;
 	i := orbSprites ;
-	; ;
-	; ;
 
 : monsterInitTable
 	# caverns
 	f_downBatInit ;
 	f_upBatInit ;
-	; ;
-	; ;
 	# jungle
 	f_walkerInit ;
 	f_shroomInit ;
-	; ;
-	; ;
 	# sky
 	f_lightningInit ;
 	f_orbInit ;
-	; ;
-	; ;
-
 
 : monsterTickTable
 	# caverns
 	f_downBatTick ;
 	f_upBatTick ;
-	; ;
-	; ;
 	# jungle
 	f_walkerTick ;
 	f_shroomTick ;
-	; ;
-	; ;
 	# sky
 	f_lightningTick ;
 	f_orbTick ;
-	; ;
-	; ;
 
 : monsterHitTable
 	# caverns
 	f_downBatHit ;
 	f_upBatHit ;
-	; ;
-	; ;
 	# jungle
 	f_walkerHit ;
 	f_shroomHit ;
-	; ;
-	; ;
 	# sky
 	f_lightningHit ;
 	f_orbHit ;
-	; ;
-	; ;
 
 
 ########
@@ -1986,7 +1961,6 @@
 	i := currentZone
 	load a_monsterType - a_monsterType
 	a_monsterType <<= a_monsterType
-	a_monsterType <<= a_monsterType
 	a_monsterType += 0
 	f_spawnMonster
 ;
@@ -1999,7 +1973,6 @@
 	sprite a_monsterX a_monsterY 1
 	i := currentZone
 	load a_monsterType - a_monsterType
-	a_monsterType <<= a_monsterType
 	a_monsterType <<= a_monsterType
 	a_monsterType += 1
 	f_spawnMonster
