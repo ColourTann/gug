@@ -154,6 +154,7 @@
 		i := monster1
 		jump f_spawnMonsterDone
 	end
+	
 
 	i := monster2
 	i += a_temp1
@@ -165,6 +166,8 @@
 		i := monster2
 		jump f_spawnMonsterDone
 	end
+
+
 
 	i := monster3
 	i += a_temp1
@@ -332,7 +335,7 @@
 	: j_moveAllMonstersUp_2
 	i := monster2
 	load a_monsterAll
-	if a_monsterActive == 0 then j_moveAllMonstersUp_3
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_3
 	a_monsterY += 1
 	i := monster2
 	save a_monsterAll
@@ -340,7 +343,7 @@
 	: j_moveAllMonstersUp_3
 	i := monster3
 	load a_monsterAll
-	if a_monsterActive == 0 then j_moveAllMonstersUp_4
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_4
 	a_monsterY += 1
 	i := monster3
 	save a_monsterAll
@@ -1327,6 +1330,7 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
+	: j_checkWhichMonster_2
 	i := monster2
 	load a_monsterAll
 	if a_monsterActive == 0 then jump j_checkWhichMonster_3
@@ -1349,6 +1353,7 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
+	: j_checkWhichMonster_3
 	i := monster3
 	load a_monsterAll
 	if a_monsterActive == 0 then jump j_checkWhichMonster_4
@@ -1508,6 +1513,7 @@
 		f_scroll
 		a_counter += 1
 	if a_counter != 64 then again
+	plane 1
 	i := player
 	load a_playerY
 	a_playerY := 46
