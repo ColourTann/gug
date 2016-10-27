@@ -61,6 +61,12 @@
 : monster2
 0 0 0 0 0 0 0 0 0 0
 
+: monster3
+0 0 0 0 0 0 0 0 0 0
+
+: monster4
+0 0 0 0 0 0 0 0 0 0
+
 : f_drawMonster
 	f_selectMonsterImage
 	v0 <<= a_monsterFrame
@@ -148,6 +154,7 @@
 		i := monster1
 		jump f_spawnMonsterDone
 	end
+	
 
 	i := monster2
 	i += a_temp1
@@ -159,6 +166,33 @@
 		i := monster2
 		jump f_spawnMonsterDone
 	end
+
+
+
+	i := monster3
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster3
+		save a_monsterAll
+		f_drawMonster
+		i := monster3
+		jump f_spawnMonsterDone
+	end
+
+	i := monster4
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster4
+		save a_monsterAll
+		f_drawMonster
+		i := monster4
+		jump f_spawnMonsterDone
+	end
+
+	# no room for the monster, just return
+	;
 
 	: f_spawnMonsterDone
 	v0 <<= a_monsterType
@@ -179,9 +213,25 @@
 	: j_tickMonsters_2
 	i := monster2
 	load a_monsterAll
-	if a_monsterActive == 0 then jump j_tickMonsters_end
+	if a_monsterActive == 0 then jump j_tickMonsters_3
 	f_tickMonster
 	i := monster2
+	save a_monsterAll
+
+	: j_tickMonsters_3
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_4
+	f_tickMonster
+	i := monster3
+	save a_monsterAll
+
+	: j_tickMonsters_4
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_end
+	f_tickMonster
+	i := monster4
 	save a_monsterAll
 
 	
@@ -195,6 +245,12 @@
 	load a_monsterAll
 	a_temp += a_monsterActive
 	i := monster2
+	load a_monsterAll
+	a_temp += a_monsterActive
+	i := monster3
+	load a_monsterAll
+	a_temp += a_monsterActive
+	i := monster4
 	load a_monsterAll
 	a_temp += a_monsterActive
 	i := activeMonsters
@@ -216,6 +272,12 @@
 	i := monster2
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
 	pop
 ;
 
@@ -226,6 +288,12 @@
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
 	i := monster2
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
+	i := monster4
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
 	pop
@@ -267,9 +335,25 @@
 	: j_moveAllMonstersUp_2
 	i := monster2
 	load a_monsterAll
-	if a_monsterActive == 0 then ;
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_3
 	a_monsterY += 1
 	i := monster2
+	save a_monsterAll
+
+	: j_moveAllMonstersUp_3
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_4
+	a_monsterY += 1
+	i := monster3
+	save a_monsterAll
+
+	: j_moveAllMonstersUp_4
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 0 then ;
+	a_monsterY += 1
+	i := monster4
 	save a_monsterAll
 ;
 
@@ -1249,7 +1333,7 @@
 	: j_checkWhichMonster_2
 	i := monster2
 	load a_monsterAll
-	if a_monsterActive == 0 then jump j_checkWhichMonster_end
+	if a_monsterActive == 0 then jump j_checkWhichMonster_3
 	f_drawMonster
 	i := spear1
 	load a_spearAllData
@@ -1266,6 +1350,52 @@
 	end
 	f_drawSprite # undraw
 	i := monster2
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	: j_checkWhichMonster_3
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_4
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_drawSprite
+	if vf == 1 begin
+		i := monster3
+		load a_monsterAll
+		f_drawMonsterNice
+		i := monster3
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_drawSprite # undraw
+	i := monster3
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	: j_checkWhichMonster_4
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_end
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_drawSprite
+	if vf == 1 begin
+		i := monster4
+		load a_monsterAll
+		f_drawMonsterNice
+		i := monster4
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_drawSprite # undraw
+	i := monster4
 	load a_monsterAll
 	f_drawMonster #undraw
 
@@ -1383,6 +1513,7 @@
 		f_scroll
 		a_counter += 1
 	if a_counter != 64 then again
+	plane 1
 	i := player
 	load a_playerY
 	a_playerY := 46
@@ -1833,6 +1964,10 @@
 	i := monster1
 	save a_monsterAll
 	i := monster2
+	save a_monsterAll
+	i := monster3
+	save a_monsterAll
+	i := monster4
 	save a_monsterAll
 	i := spear1
 	save a_spearAllData
