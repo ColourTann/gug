@@ -1035,6 +1035,7 @@
 
 : spearThrowRequested 0
 : spear 0b111
+		0b111 # extra for plane 3 drawing
 : spearCount 	0
 : spearCooldown	0
 : spearTable
@@ -1454,10 +1455,12 @@
 ;
 
 : f_successfulHit
-	# on hit, we must undraw the spear
+	# on hit, we must undraw the spear on both planes
 	i := spear1
 	load a_spearAllData
+	plane 3
 	f_drawSprite
+	plane 2
 	pop
 ;
 
