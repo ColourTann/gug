@@ -1952,7 +1952,7 @@
 	if a_fillY != a_specialHeight then again
 ;
 
-: f_spawn0
+: f_spawnBase
 	a_monsterX := a_temp
 	a_monsterY := 0
 	i := pixel
@@ -1961,19 +1961,15 @@
 	i := currentZone
 	load a_monsterType - a_monsterType
 	a_monsterType <<= a_monsterType
-	a_monsterType += 0
+;
+
+: f_spawn0
+	f_spawnBase
 	f_spawnMonster
 ;
 
 : f_spawn1
-	a_monsterX := a_temp
-	a_monsterY := 0
-	i := pixel
-	plane 1
-	sprite a_monsterX a_monsterY 1
-	i := currentZone
-	load a_monsterType - a_monsterType
-	a_monsterType <<= a_monsterType
+	f_spawnBase
 	a_monsterType += 1
 	f_spawnMonster
 ;
