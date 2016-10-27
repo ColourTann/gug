@@ -853,13 +853,17 @@
 	# player has hit a wall that does not connect to the ground
 	if vf != 0 then jump j_checkCollisionH_checkStep_false
 
-	# draw dot 1 higher
-	a_spriteY += -1
-	sprite a_spriteX a_spriteY 1
-	sprite a_spriteX a_spriteY 1
+	# draw amy where she'll be after the step
+	# a_spriteX and a_spriteY are adjusted back to the player's position
+	i  := amy
+	a_spriteX -= a_temp1
+	a_spriteY += -3
+	sprite a_spriteX a_spriteY 3
+	a_temp1 := vf
+	sprite a_spriteX a_spriteY 3
 
-	# the ground the player is walking into is two blocks high
-	if vf == 0 then jump j_checkCollisionH_checkStep_false
+	# the ground the player will step up to will cause a collision
+	if a_temp1 == 1 then jump j_checkCollisionH_checkStep_false
 
 : j_checkCollisionH_checkStep_true
 	vf := 1
