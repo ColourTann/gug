@@ -43,17 +43,16 @@
 #
 
 : activeMonsters 0 # currently used to skip over calculations if there are no monsters
-
-:alias a_monsterX 			v0
-:alias a_monsterY 			v1
-:alias a_monsterDX 			v2
-:alias a_monsterDY 			v3
-:alias a_monsterType 		v4
-:alias a_monsterCooldown 	v5
-:alias a_monsterSpecial 	v6
-:alias a_monsterActive 		v7
-:alias a_monsterFrame 		v8 # i offset
-:alias a_monsterFrameInt	v9 # internal coutner
+# v0 is reserved for jump0
+:alias a_monsterX 			v1
+:alias a_monsterY 			v2
+:alias a_monsterDX 			v3
+:alias a_monsterDY 			v4
+:alias a_monsterType 		v5
+:alias a_monsterCooldown 	v6
+:alias a_monsterSpecial 	v7
+:alias a_monsterActive 		v8
+:alias a_monsterFrame 		v9 # i offset
 :alias a_monsterAll 		v9
 
 : monster1
@@ -62,71 +61,38 @@
 : monster2
 0 0 0 0 0 0 0 0 0 0
 
-: upBatWaiting
-	0b0001000
-	0b0011100
-	0b0011100
-	0b0011100
-	0b0010100
+: monster3
+0 0 0 0 0 0 0 0 0 0
 
-: monsterImages
-
-: downBat
-: downBatFrame1
-	0b0010100
-	0b1011101
-	0b0111110
-	0b0011100
-	0b0001000
-	0b0000000
-	0b0000000
-	0b0000000
-
-: downBatFrame2
-	0b0010100
-	0b0011100
-	0b0111110
-	0b1011101
-	0b0001000
-	0b0000000
-	0b0000000
-	0b0000000
-
-: upBat
-: upBatFrame1
-	0b0010100
-	0b0011100
-	0b0111110
-	0b1011101
-	0b0001000
-	0b0000000
-	0b0000000
-	0b0000000
-
-: upBatFrame2
-	0b0010100
-	0b1011101
-	0b0111110
-	0b0011100
-	0b0001000
-	0b0000000
-	0b0000000
-	0b0000000
-
-: monsterImageJumpTable
-	i := downBat ;
-	i := upBat ;
+: monster4
+0 0 0 0 0 0 0 0 0 0
 
 : f_drawMonster
-	i := monsterImages
-	i += a_monsterFrame
+	f_selectMonsterImage
+	v0 <<= a_monsterFrame
+	v0 <<= v0
+	v0 <<= v0
+	i += v0
 	sprite a_monsterX a_monsterY 8
 ;
 
+: f_selectMonsterImage
+	
+	v0 <<= a_monsterType
+	v0 <<= v0
+	jump0 monsterImageTable
+;
+
+
 : f_drawMonsterNice
 	push
-	i := monsterImages
-	i += a_monsterFrame
+	
+	f_selectMonsterImage
+	v0 <<= a_monsterFrame
+	v0 <<= v0
+	v0 <<= v0
+	i += v0
+	v0 := a_temp
 
 
 	a_temp := 64
@@ -134,8 +100,9 @@
 
 
 	a_temp -= a_monsterY
+
 	if a_temp == 0 then jump j_drawMonster_end
-	if a_temp > 65 then jump j_drawMonster_end
+	if a_temp > 64 then jump j_drawMonster_end
 	if a_temp > 7 begin
 	 	sprite a_monsterX a_monsterY 8
 		jump j_drawMonster_end
@@ -167,46 +134,78 @@
 
 : f_spawnMonster
 	plane 2
+	
+
 	a_monsterActive := 1
 	a_monsterFrame := 0
-	a_monsterFrameInt := 0
 	a_monsterSpecial := 0
 	a_monsterDY := 0
 	a_monsterDX := 0
-	a_temp1 := 7
-	i := monster1
-	i += a_temp1
+	a_temp1 := 8
 
 	# find a free monster slot to put it in
+	i := monster1
+	i += a_temp1
 	load a_temp - a_temp
 	if a_temp == 0 begin
 		i := monster1
 		save a_monsterAll
 		f_drawMonster
+		i := monster1
 		jump f_spawnMonsterDone
 	end
+	
+
 	i := monster2
 	i += a_temp1
 	load a_temp - a_temp
 	if a_temp == 0 begin
 		i := monster2
 		save a_monsterAll
-		i := monster2
 		f_drawMonster
+		i := monster2
 		jump f_spawnMonsterDone
 	end
 
+
+
+	i := monster3
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster3
+		save a_monsterAll
+		f_drawMonster
+		i := monster3
+		jump f_spawnMonsterDone
+	end
+
+	i := monster4
+	i += a_temp1
+	load a_temp - a_temp
+	if a_temp == 0 begin
+		i := monster4
+		save a_monsterAll
+		f_drawMonster
+		i := monster4
+		jump f_spawnMonsterDone
+	end
+
+	# no room for the monster, just return
+	;
+
 	: f_spawnMonsterDone
+	v0 <<= a_monsterType
+	v0 <<= v0
+	jump0 monsterInitTable
 	plane 1
 ;
 
 : f_tickMonsters
+
 	i := monster1
 	load a_monsterAll
 	if a_monsterActive == 0 then jump j_tickMonsters_2
-	f_tickMonsterSpecial
-	i := monster1
-	save a_monsterAll
 	f_tickMonster
 	i := monster1
 	save a_monsterAll
@@ -214,12 +213,25 @@
 	: j_tickMonsters_2
 	i := monster2
 	load a_monsterAll
-	if a_monsterActive == 0 then jump j_tickMonsters_end
-	f_tickMonsterSpecial
-	i := monster2
-	save a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_3
 	f_tickMonster
 	i := monster2
+	save a_monsterAll
+
+	: j_tickMonsters_3
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_4
+	f_tickMonster
+	i := monster3
+	save a_monsterAll
+
+	: j_tickMonsters_4
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_tickMonsters_end
+	f_tickMonster
+	i := monster4
 	save a_monsterAll
 
 	
@@ -235,86 +247,22 @@
 	i := monster2
 	load a_monsterAll
 	a_temp += a_monsterActive
+	i := monster3
+	load a_monsterAll
+	a_temp += a_monsterActive
+	i := monster4
+	load a_monsterAll
+	a_temp += a_monsterActive
 	i := activeMonsters
 	save a_temp - a_temp
 ;
 
-: monsterSpecialTicks
-	jump f_tickDownBat
-	jump f_tickUpBat
-
 : f_tickMonsterSpecial
 	load a_monsterAll
-	a_temp := v0
 	v0 <<= a_monsterType
-	jump0 monsterSpecialTicks
+	v0 <<= v0
+	jump0 monsterTickTable
 ;	
-
-# currently you need to set "a_monsterX := a_temp" because v0 is used to jump here
-: f_tickDownBat
-	a_monsterX := a_temp
-	i := playerX
-	load a_temp1 - a_temp1
-	a_monsterDX := 1
-	# bats fly down and towards the player
-	if a_monsterX > a_temp1 then a_monsterDX := -1
-	a_monsterDY := 1
-
-	# but they fly weirdly and jaggedy
-	a_temp := random 0b00000001
-	if a_temp != 0 then a_monsterDX := 0
-	if a_temp != 1 then a_monsterDY := 0
-;
-
-: f_tickUpBat
-	a_monsterX := a_temp
-	if a_monsterSpecial == 0 begin
-		# upbats start in waiting mode and must be drawn like that
-		# if we ever get a constructor for enemies, this code should go there
-		a_monsterSpecial := 1
-		#plane 2
-		#f_drawMonster
-		
-		#i := upBatWaiting
-		#sprite a_monsterX a_monsterY 5
-	end
-	
-	if a_monsterSpecial == 1 begin
-		a_monsterDX := 0
-		a_monsterFrameInt := 0
-		if a_monsterY == 50 begin
-			# once the player has moved up enough past, upbats start chasing
-			a_monsterSpecial := 2
-			#plane 2
-			#i := upBatWaiting
-			#sprite a_monsterX a_monsterY 5
-			#f_drawMonster
-		end
-		;
-	end
-
-	# kill if they reach top of the screen
-	if a_monsterY == 0 begin
-		plane 2
-		f_drawMonster
-		a_monsterActive := 0
-	end
-
-	# this is just code copied from downbats but with DY reversed
-	a_monsterX := a_temp
-	a_temp := a_monsterX
-	i := playerX
-	load a_temp1 - a_temp1
-	a_monsterDX := 1
-	# bats fly down and towards the player
-	if a_temp > a_temp1 then a_monsterDX := -1
-	a_monsterDY := -1
-
-	# but they fly weirdly and jaggedy
-	a_temp := random 0b00000001
-	if a_temp != 0 then a_monsterDX := 0
-	if a_temp != 1 then a_monsterDY := 0
-;
 
 : f_drawAllMonsters
 	push
@@ -322,6 +270,12 @@
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
 	i := monster2
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonster
+	i := monster4
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
 	pop
@@ -336,41 +290,38 @@
 	i := monster2
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 1 then f_drawMonsterNice
 	pop
 ;
 
 : f_tickMonster
 	# simply adds dx and dy to monster position and redraws the correct frame
 	load a_monsterAll
-
 	if a_monsterActive == 0 then return
 		
 	plane 2
 	f_drawMonsterNice
+	f_tickMonsterSpecial
 	a_monsterX += a_monsterDX
 	a_monsterY += a_monsterDY
 
-	a_monsterFrameInt += 1
-	if a_monsterFrameInt == 4 then a_monsterFrameInt := 0
 
-	a_temp2 >>= a_monsterFrameInt
-	a_monsterFrame <<= a_monsterType
-	a_monsterFrame += a_temp2
-	a_monsterFrame <<= a_monsterFrame
-	a_monsterFrame <<= a_monsterFrame
-	a_monsterFrame <<= a_monsterFrame
-	f_drawMonsterNice
 	f_checkMonsterPosition
+
+	if a_monsterActive == 1 then f_drawMonsterNice
+	
 	plane 1
 ;
 
 : f_hitBySpear
-	# monster hit by a spear!
-	a_monsterActive := 0
-	save a_monsterAll
-	
-	f_drawMonster
-	
+	v0 <<= a_monsterType
+	v0 <<= v0
+	jump0 monsterHitTable
 ;
 
 : f_moveAllMonstersUp
@@ -384,9 +335,25 @@
 	: j_moveAllMonstersUp_2
 	i := monster2
 	load a_monsterAll
-	if a_monsterActive == 0 then ;
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_3
 	a_monsterY += 1
 	i := monster2
+	save a_monsterAll
+
+	: j_moveAllMonstersUp_3
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_moveAllMonstersUp_4
+	a_monsterY += 1
+	i := monster3
+	save a_monsterAll
+
+	: j_moveAllMonstersUp_4
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 0 then ;
+	a_monsterY += 1
+	i := monster4
 	save a_monsterAll
 ;
 
@@ -396,6 +363,493 @@
 
 : f_deactivateMonster
 	a_monsterActive := 0
+;
+
+
+: monsterImageTable
+	# caverns
+	i := downBatSprites ;
+	i := upBatSprites ;
+	; ;
+	; ;
+	# jungle
+	i := walkerSprites ;
+	i := shroomSprites ;
+	; ;  
+	; ;
+	# sky
+	i := lightningSprites ;
+	i := orbSprites ;
+	; ;
+	; ;
+
+: monsterInitTable
+	# caverns
+	f_downBatInit ;
+	f_upBatInit ;
+	; ;
+	; ;
+	# jungle
+	f_walkerInit ;
+	f_shroomInit ;
+	; ;
+	; ;
+	# sky
+	f_lightningInit ;
+	f_orbInit ;
+	; ;
+	; ;
+
+
+: monsterTickTable
+	# caverns
+	f_downBatTick ;
+	f_upBatTick ;
+	; ;
+	; ;
+	# jungle
+	f_walkerTick ;
+	f_shroomTick ;
+	; ;
+	; ;
+	# sky
+	f_lightningTick ;
+	f_orbTick ;
+	; ;
+	; ;
+
+: monsterHitTable
+	# caverns
+	f_downBatHit ;
+	f_upBatHit ;
+	; ;
+	; ;
+	# jungle
+	f_walkerHit ;
+	f_shroomHit ;
+	; ;
+	; ;
+	# sky
+	f_lightningHit ;
+	f_orbHit ;
+	; ;
+	; ;
+
+
+########
+# down bat
+
+: downBatSprites
+: downBatFrame1
+	0b0010100
+	0b1011101
+	0b0111110
+	0b0011100
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: downBatFrame2
+	0b0010100
+	0b0011100
+	0b0111110
+	0b1011101
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: f_downBatInit
+	v0 := a_temp
+;
+
+: f_downBatTick
+	i := playerX
+	load a_temp1 - a_temp1
+	a_monsterDX := 1
+	# bats fly down and towards the player
+	if a_monsterX > a_temp1 then a_monsterDX := -1
+	a_monsterDY := 1
+	a_monsterFrame += 1
+	if a_monsterFrame == 2 then a_monsterFrame := 0
+	# but they fly weirdly and jaggedy
+	a_temp := random 0b00000001
+	if a_temp != 0 then a_monsterDX := 0
+	if a_temp != 1 then a_monsterDY := 0
+;
+
+: f_downBatHit
+	a_monsterActive := 0
+	save a_monsterAll
+	i := long audio_spearHitEnemy_bat
+	f_playAudio
+;
+
+########
+# up bat
+
+: upBatSprites
+: upBatSleeping
+	0b0001000
+	0b0011100
+	0b0011100
+	0b0011100
+	0b0010100
+	0b0000000
+	0b0000000
+	0b0000000
+
+: upBatFrame1
+	0b0010100
+	0b0011100
+	0b0111110
+	0b1011101
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: upBatFrame2
+	0b0010100
+	0b1011101
+	0b0111110
+	0b0011100
+	0b0001000
+	0b0000000
+	0b0000000
+	0b0000000
+
+: f_upBatInit
+;
+
+: f_upBatTick	
+	if a_monsterSpecial == 0 begin
+		a_monsterDX := 0
+		if a_monsterY == 50 begin
+			# once the player has moved up enough past, upbats start chasing
+			a_monsterSpecial := 1
+			#plane 2
+			#i := upBatWaiting
+			#sprite a_monsterX a_monsterY 5
+			#f_drawMonster
+		end
+		;
+	end
+
+	# kill if they reach top of the screen
+	if a_monsterY == 0 begin
+		a_monsterActive := 0
+	end
+
+	a_monsterFrame += 1
+	if a_monsterFrame == 3 then a_monsterFrame := 1
+
+	# this is just code copied from downbats but with DY reversed
+	
+	a_temp := a_monsterX
+	i := playerX
+	load a_temp1 - a_temp1
+	a_monsterDX := 1
+	# bats fly down and towards the player
+	if a_temp > a_temp1 then a_monsterDX := -1
+	a_monsterDY := -1
+
+	# but they fly weirdly and jaggedy
+	a_temp := random 0b00000001
+	if a_temp != 0 then a_monsterDX := 0
+	if a_temp != 1 then a_monsterDY := 0
+;
+
+: f_upBatHit
+	a_monsterActive := 0
+	save a_monsterAll
+	i := long audio_spearHitEnemy_bat
+	f_playAudio
+;
+
+########
+# walker
+
+: walkerSprites
+: walkerFrame0
+	0b0100000
+	0b1110000
+	0b0100000
+	0b1010000
+	0b0000000
+	0b0000000
+	0b0000000
+	0b0000000
+
+
+: f_walkerInit
+	a_monsterDX := 1
+	save a_monsterAll
+
+;
+
+: f_walkerTick	
+	plane 1
+	a_counter := 0
+	a_temp1 := a_monsterY
+	a_monsterY += 1
+
+	loop
+		f_drawMonster #draw
+		
+		a_temp := vf
+		f_drawMonster #undraw
+		if a_temp == 0 then jump j_walkerTick_noCollide
+		a_monsterY += -1
+		a_counter += 1
+	if a_counter != 3 then again
+	a_monsterY := a_temp1
+	a_temp := 0
+	a_temp -= a_monsterDX
+	a_monsterDX := a_temp
+	a_monsterX += a_monsterDX
+
+	: j_walkerTick_noCollide
+	plane 2	
+;
+
+: f_walkerHit
+	a_monsterActive := 0
+	save a_monsterAll
+	i := long audio_spearHitEnemy_bat
+	f_playAudio
+;
+
+########
+# shroom
+
+:const c_shroomWaitFrames 40
+:const c_shroomSporeFrames 8
+
+: shroomSprites
+: shroomIdle
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+: shroomSporing
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00111100
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00011000
+	0b01000010
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00100100
+	0b00000000
+	0b10000001
+	0b00011000
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b01000010
+	0b00000000
+	0b10011001
+	0b00101100
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b01000010
+	0b00011000
+	0b10101101
+	0b00110100
+	0b00011000
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b01101110
+	0b00110100
+	0b10011001
+	0b00011000
+
+	0b00000000
+	0b00000000
+	0b00000000
+	0b00011000
+	0b00101100
+	0b00110100
+	0b01011010
+	0b00011000
+
+
+: f_shroomInit
+;
+
+: f_shroomTick	
+	if a_monsterFrame == 0 begin
+		a_monsterSpecial += 1
+		if a_monsterSpecial == c_shroomWaitFrames begin
+			a_monsterSpecial := 0
+			a_monsterFrame := 1
+		end
+		;
+	end
+	if a_monsterFrame == c_shroomSporeFrames begin
+		a_monsterSpecial := 0
+		a_monsterFrame := 0
+		;
+	end
+	a_monsterFrame += 1
+;
+
+: f_shroomHit
+	i := long audio_spearHitEnemy_bat
+	f_playAudio
+;
+
+########
+# lightning
+
+: lightningSprites
+: lightningBlank
+	0b0000000
+	0b0000000
+	0b0000000
+	0b0000000
+	0b0000000
+	0b0000000
+	0b0000000
+	0b0000000
+: lightningFrame
+	0b1000000
+	0b1010000
+	0b1110000
+	0b1010000
+	0b0010000
+	0b0000000
+	0b0000000
+	0b0000000
+
+
+: f_lightningInit
+;
+
+: f_lightningTick	
+	
+	
+	if a_monsterSpecial == 0 then a_monsterFrame := 1
+	if a_monsterSpecial == 1 then a_monsterDY := 4
+	if a_monsterSpecial == 7 begin
+		a_monsterFrame := 0
+		a_monsterDY := -24
+	end
+	if a_monsterSpecial == 8 then a_monsterDY := 0
+	a_monsterSpecial += 1
+	
+	if a_monsterSpecial == 14 begin
+		a_monsterSpecial := 0
+	end
+;
+
+: f_lightningHit
+;
+
+########
+# orb
+
+: orbSprites
+	0b0111000
+	0b1000100
+	0b1010100
+	0b1000100
+	0b0111000
+	0b0000000
+	0b0000000
+	0b0000000
+
+
+
+: f_orbInit
+;
+
+: f_orbTick	
+	
+	
+	if vf == 1 then ;
+	i := playerX
+	load a_temp - a_temp1
+
+	# a_temp is playerX
+	# a_temp1 is playerY
+
+	# special is dx
+	# cooldown is dy
+
+	a_temp -= a_monsterX
+	a_monsterSpecial += 1
+	if a_temp > 128 then a_monsterSpecial += -2
+	a_monsterCooldown += 1
+	a_temp1 -= a_monsterY
+	if a_temp1 > 128 then a_monsterCooldown += -2
+	if a_monsterSpecial == 18 then a_monsterSpecial := 17
+	if a_monsterSpecial == -18 then a_monsterSpecial := -17
+	if a_monsterCooldown == 18 then a_monsterCooldown := 17
+	if a_monsterCooldown == -18 then a_monsterCooldown := -17
+	
+	
+
+		a_monsterDX >>= a_monsterSpecial
+		a_monsterDX >>= a_monsterDX
+		a_monsterDX >>= a_monsterDX
+	
+	if a_monsterSpecial > 128 then a_monsterDX += 0b11100000
+		
+	
+		a_monsterDY >>= a_monsterCooldown
+		a_monsterDY >>= a_monsterDY
+		a_monsterDY >>= a_monsterDY
+
+	if a_monsterCooldown > 128 then a_monsterDY += 0b11100000
+	
+
+	
+;
+
+: f_orbHit
+	a_monsterActive := 0
+	save a_monsterAll
+	i := long audio_spearHitEnemy_bat
+	f_playAudio
 ;
 
 #################################
@@ -534,13 +988,17 @@
 	# player has hit a wall that does not connect to the ground
 	if vf != 0 then jump j_checkCollisionH_checkStep_false
 
-	# draw dot 1 higher
-	a_spriteY += -1
-	sprite a_spriteX a_spriteY 1
-	sprite a_spriteX a_spriteY 1
+	# draw amy where she'll be after the step
+	# a_spriteX and a_spriteY are adjusted back to the player's position
+	i  := amy
+	a_spriteX -= a_temp1
+	a_spriteY += -3
+	sprite a_spriteX a_spriteY 3
+	a_temp1 := vf
+	sprite a_spriteX a_spriteY 3
 
-	# the ground the player is walking into is two blocks high
-	if vf == 0 then jump j_checkCollisionH_checkStep_false
+	# the ground the player will step up to will cause a collision
+	if a_temp1 == 1 then jump j_checkCollisionH_checkStep_false
 
 : j_checkCollisionH_checkStep_true
 	vf := 1
@@ -762,7 +1220,7 @@
 	jump j_throwSpear_fail
 
 : j_throwSpear_succeed
-	i := audio_spear_throw
+	i := long audio_spearThrow
 	f_playAudio
 	f_queue_spears
 	# save new spear as spear 1
@@ -879,17 +1337,23 @@
 	# load up spear 1 data, set plane to 2
 	i := spear1
 	load a_spearAllData
-	plane 2
-
-	# draw the spear in plane 2 and start collision method
-	f_drawSpear
-	f_spearSlowCollisionHMonsters
+	plane 1
 	
+	f_drawSpear #undraw plane 1
+	
+	plane 2
+	f_drawSpear # draw the spear in plane 2 and start collision method
+	f_spearSlowCollisionHMonsters
 	# if it's now not moving (collided with monster) then skip to end
 	if a_spearSpeedX == 0 then jump j_checkSpearCollisionH_end
 	
 	# set to plane 1 before checking terrain collisions
 	plane 1
+	
+	i := spear1
+	load a_spearAllData
+	f_drawSpear # redraw
+	
 	
 	: j_checkSpearCollisionH_terrain
 
@@ -923,6 +1387,7 @@
 		a_counter -= a_temp
 		a_spriteX += a_temp
 		f_drawSprite # redraw
+		
 		if vf == 1 begin
 			# collided with terrain!
 			
@@ -942,13 +1407,20 @@
 	if a_spriteSpeedX == 0  then return
 	if a_spriteSpeedX < 128 then a_temp :=  1
 	if a_spriteSpeedX > 128 then a_temp := -1
+
 	a_counter := a_spriteSpeedX
+	
 	loop	
+		
 		f_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
 		f_drawSprite # redraw
 		if vf == 1 begin
+			f_drawSprite #undraw
+			i := spear1 
+			save a_spearAllData
+			
 			f_potentialMonsterCollision
 			;						
 		end		
@@ -957,7 +1429,6 @@
 ;
 
 : f_potentialMonsterCollision
-	f_drawSprite #undraw 
 	f_drawAllMonsters # undraw
 	f_checkWhichMonster
 	f_drawAllMonsters
@@ -965,13 +1436,9 @@
 	if a_temp2 == 0 then ;
 	i := spear1
 	load a_spearAllData
-	plane 1
-	f_drawSprite
 	a_spearSpeedX := 0 
 	a_spearSpeedY := 0 # stop spear and leave to caller to save
 	a_spearActive := 0
-	i := audio_spear_hit_enemy
-	f_playAudio
 ;
 
 : f_checkWhichMonster
@@ -982,11 +1449,15 @@
 
 	i := monster1
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_2
 	f_drawMonster
 	i := spear1
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
+		i := monster1
+		load a_monsterAll
+		f_drawMonsterNice
 		i := monster1
 		load a_monsterAll
 		f_hitBySpear
@@ -998,13 +1469,18 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
+	: j_checkWhichMonster_2
 	i := monster2
 	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_3
 	f_drawMonster
 	i := spear1
 	load a_spearAllData
 	f_drawSprite
 	if vf == 1 begin
+		i := monster2
+		load a_monsterAll
+		f_drawMonsterNice
 		i := monster2
 		load a_monsterAll
 		f_hitBySpear
@@ -1016,6 +1492,53 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
+	: j_checkWhichMonster_3
+	i := monster3
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_4
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_drawSprite
+	if vf == 1 begin
+		i := monster3
+		load a_monsterAll
+		f_drawMonsterNice
+		i := monster3
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_drawSprite # undraw
+	i := monster3
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	: j_checkWhichMonster_4
+	i := monster4
+	load a_monsterAll
+	if a_monsterActive == 0 then jump j_checkWhichMonster_end
+	f_drawMonster
+	i := spear1
+	load a_spearAllData
+	f_drawSprite
+	if vf == 1 begin
+		i := monster4
+		load a_monsterAll
+		f_drawMonsterNice
+		i := monster4
+		load a_monsterAll
+		f_hitBySpear
+		f_successfulHit
+		;
+	end
+	f_drawSprite # undraw
+	i := monster4
+	load a_monsterAll
+	f_drawMonster #undraw
+
+	: j_checkWhichMonster_end
 	pop
 	a_temp2 := 0
 ;
@@ -1113,13 +1636,12 @@
 	hires
 	f_reset	
 	loop
-		f_tickMonsters
 		f_tickPlayer
 		f_tickSpears
+		f_tickMonsters		
 		f_checkScrolling
 		f_checkLossFlag
 		f_delayFPS
-		
 	again
 ;
 
@@ -1130,6 +1652,7 @@
 		f_scroll
 		a_counter += 1
 	if a_counter != 64 then again
+	plane 1
 	i := player
 	load a_playerY
 	a_playerY := 46
@@ -1162,6 +1685,7 @@
 ;
 
 : f_tickPlayer
+	plane 1
 	f_playerGravity
 	f_checkPlayerCollisionV
 	f_input
@@ -1198,7 +1722,7 @@
 
 	# if player has both jumps left...
 
-	i := audio_jump
+	i := long audio_jump
 	f_playAudio
 
 	a_playerJumpAvailable := 1
@@ -1211,7 +1735,7 @@
 	i := jumpKeyReleased
 	load va - va
 	if va == 0 then jump j_input_left
-	i := audio_double_jump
+	i := long audio_doubleJump
 	f_playAudio
 	a_playerJumpAvailable := 0
 	a_playerSpeedY := c_doubleJumpHeight
@@ -1461,6 +1985,7 @@
 	jump f_drawPool
 	jump f_spawn0
 	jump f_spawn1
+	jump f_spawn2
 ;
 
 : f_drawGem
@@ -1519,14 +2044,42 @@
 : f_spawn0
 	a_monsterX := a_temp
 	a_monsterY := 0
-	a_monsterType := 0
+	i := pixel
+	plane 1
+	sprite a_monsterX a_monsterY 1 #undraw red pixel
+	i := currentZone
+	load a_monsterType - a_monsterType
+	a_monsterType <<= a_monsterType
+	a_monsterType <<= a_monsterType
+	a_monsterType += 0
 	f_spawnMonster
 ;
 
 : f_spawn1
 	a_monsterX := a_temp
 	a_monsterY := 0
-	a_monsterType := 1
+	i := pixel
+	plane 1
+	sprite a_monsterX a_monsterY 1
+	i := currentZone
+	load a_monsterType - a_monsterType
+	a_monsterType <<= a_monsterType
+	a_monsterType <<= a_monsterType
+	a_monsterType += 1
+	f_spawnMonster
+;
+
+: f_spawn2
+	a_monsterX := a_temp
+	a_monsterY := 0
+	i := pixel
+	plane 1
+	sprite a_monsterX a_monsterY 1
+	i := currentZone
+	load a_monsterType - a_monsterType
+	a_monsterType <<= a_monsterType
+	a_monsterType <<= a_monsterType
+	a_monsterType += 2
 	f_spawnMonster
 ;
 
@@ -1537,7 +2090,7 @@
 
 0b11
 0b11
-0b11 # duplicated for plane 3
+0b11 # duplicated for plane 3 drawing efficiency
 
 : pixel 0b10000000
 
@@ -1550,6 +2103,10 @@
 	i := monster1
 	save a_monsterAll
 	i := monster2
+	save a_monsterAll
+	i := monster3
+	save a_monsterAll
+	i := monster4
 	save a_monsterAll
 	i := spear1
 	save a_spearAllData
@@ -1611,11 +2168,10 @@
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+
+
+	
 
 : stack-buffer                     # catch a potential stack overflow
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -1661,28 +2217,7 @@
 
 
 
-################################# # #
-#
-#  Sounds
-#  Each sound is:
-#  - 1 byte header which detemines how long the audio is played for
-#  - 16 bytes of 1-bit audio data
-#  
-#  To use: set i to an audio label, call f_playAudio. [nukes ve and vf]
-#
 
-: audio_jump
-	2
-	0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00
-: audio_double_jump
-	1
-	0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
-: audio_spear_throw
-	1
-	0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00
-: audio_spear_hit_enemy
-	3
-	0x55 0xAA 0x55 0xAA 0x55 0xAA 0x55 0xAA 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 
 : f_playAudio
 	load vf - vf
@@ -1861,6 +2396,29 @@
 	i := long sky_cc1 ;
 
 	################
+
+################################# # #
+#
+#  Sounds
+#  Each sound is:
+#  - 1 byte header which detemines how long the audio is played for
+#  - 16 bytes of 1-bit audio data
+#  
+#  To use: set i to an audio label, call f_playAudio. [nukes ve and vf]
+#
+
+: audio_jump
+	2
+	0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00 0xFF 0x00
+: audio_doubleJump
+	1
+	0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0 0xF0
+: audio_spearThrow
+	1
+	0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00 0xFF 0xFF 0x00 0x00
+: audio_spearHitEnemy_bat
+	3
+	0x55 0xAA 0x55 0xAA 0x55 0xAA 0x55 0xAA 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 
 : cavern_cc0
 	100
@@ -4382,9 +4940,9 @@
 	0x00 0x00 0x00 0x00 0x00 0x01 0x20 0x40 0x01 0x02 0x20 0x00 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x0f 0xff 0xff 0xff 0xff 0xfe 0x00 0x08 0x00 0x00 0x00
 	0x08 0x00 0x00 0x00 0x00 0x04 0x00 0x00 0x00 0x00 0x08 0x00 0x1c 0x00 0x02 0x00
-	0x1c 0x00 0x00 0x00 0x00 0x09 0xff 0xff 0xff 0xff 0xd0 0x00 0x08 0x00 0x07 0x00
-	0x08 0x00 0x00 0x00 0x00 0x09 0xff 0xff 0xff 0xff 0xa0 0x00 0x00 0x00 0x02 0x00
-	0x00 0x00 0x00 0x00 0x00 0x05 0xff 0xff 0xff 0xff 0xa0 0x00 0x00 0x00 0x00 0x00
+	0x1c 0x00 0x00 0x00 0x00 0x0b 0xff 0xff 0xff 0xff 0xd0 0x00 0x08 0x00 0x07 0x00
+	0x08 0x00 0x00 0x00 0x00 0x0b 0xff 0xff 0xff 0xff 0xe8 0x00 0x00 0x00 0x02 0x00
+	0x00 0x00 0x00 0x00 0x00 0x05 0xff 0xff 0xff 0xff 0xe8 0x00 0x00 0x00 0x00 0x00
 	
 : sky_ic1
 	32
@@ -4453,13 +5011,13 @@
 	0x00 0x00 0x00 0x00 0x00 0x02 0xff 0xff 0xff 0xff 0xe8 0x02 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x02 0xff 0xe0 0x00 0xff 0xf4 0x07 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x01 0x00 0x05 0xfe 0x00 0x00 0x0f 0xf4 0x0f 0x80 0x00 0x00 0x00
-	0xec 0x00 0x00 0x03 0x80 0x05 0xfc 0x10 0x41 0x07 0xfa 0x0f 0x80 0x00 0x00 0x01
+	0xec 0x00 0x00 0x03 0x80 0x05 0xf4 0x10 0x41 0x05 0xfa 0x0f 0x80 0x00 0x00 0x01
 	0xff 0x80 0x00 0x07 0xc0 0x0b 0xee 0x28 0xe2 0x8e 0xfa 0x0f 0x80 0x00 0x3e 0x0f
 	0xff 0xc0 0x00 0x07 0xc0 0x0b 0xdf 0x45 0xf4 0x5f 0x7a 0x07 0x00 0x00 0x7f 0x1f
 	0xff 0x80 0x80 0x07 0xc0 0x0b 0xdf 0x45 0xf4 0x5f 0x7a 0x02 0x00 0x03 0xff 0xff
 	0xff 0xc1 0xc0 0x03 0x80 0x0b 0xdf 0x45 0xf4 0x5f 0x7a 0x00 0x02 0x03 0xff 0xff
 	0xff 0x03 0xe0 0x01 0x00 0x05 0xee 0x28 0xe2 0x8e 0xf4 0x00 0x07 0x07 0xff 0xff
-	0xff 0x03 0xe0 0x00 0x00 0x05 0xfc 0x10 0x41 0x07 0xf4 0x00 0x0f 0x87 0xff 0xff
+	0xff 0x03 0xe0 0x00 0x00 0x05 0xf4 0x10 0x41 0x05 0xf4 0x00 0x0f 0x87 0xff 0xff
 	0xfe 0x03 0xe0 0x00 0x00 0x05 0xfe 0x00 0x00 0x0f 0xf4 0x00 0x0f 0x83 0xff 0xff
 	0xb8 0x01 0xc0 0x00 0x00 0x02 0xff 0xe0 0x00 0xff 0xe8 0x00 0x0f 0x80 0x3f 0xf0
 	0x00 0x00 0x80 0x00 0x00 0x02 0xff 0xff 0xff 0xff 0xe8 0x00 0x07 0x00 0x0f 0xe0
@@ -4539,8 +5097,44 @@
 	0x00 0x00 0x3f 0xfc 0x00 0x01 0x7f 0xff 0xff 0xff 0xd0 0x00 0x00 0x00 0x00 0x00
 	
 : sky_start
-	44
-	0 0 0 0 0 0 0 0 0 0 0 
+	80
+	0 0 0 169 152 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x01 0xe0 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x1c 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x02 0x00 0x00 0x00 0x08 0x00 0x03 0xff 0x80 0x00 0x00
+	0x00 0x00 0x00 0x01 0x00 0x01 0x80 0x00 0x00 0x0c 0x00 0x3f 0xf7 0xc0 0x00 0x00
+	0x00 0x00 0x00 0x06 0x08 0x00 0x60 0x00 0x00 0x04 0x00 0x77 0xef 0xc0 0x00 0x00
+	0x00 0x00 0x00 0x78 0x00 0x00 0x20 0x00 0x00 0x00 0x00 0x7b 0xff 0xc0 0x00 0x00
+	0x00 0x00 0x01 0x80 0x00 0x00 0x10 0x00 0x00 0x00 0x00 0x7f 0xff 0x80 0x00 0x00
+	0x00 0x00 0x0e 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x3f 0xc0 0x00 0x00 0x00
+	0x00 0x00 0x08 0x00 0x00 0x00 0x18 0x00 0x00 0x00 0x00 0x00 0x80 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x30 0x00 0x00 0x00 0x00 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x01 0x00
+	0x00 0x40 0x00 0x00 0x00 0x00 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x01 0x00
+	0x00 0x80 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02 0x00
+	0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x04 0x00
+	0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x18 0x00 0x00 0x00 0x00 0x00 0x00 0x04 0x00
+	0x0c 0x00 0x00 0x00 0x00 0x00 0x00 0x07 0x00 0x00 0x00 0x00 0x00 0x00 0x0c 0x00
+	0x00 0x00 0x00 0x00 0xc0 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x08 0x00
+	0x00 0x00 0x00 0x00 0x20 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x08 0x00
+	0x00 0x00 0x00 0x00 0x1c 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x03 0x80 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x40
@@ -4630,7 +5224,7 @@
 	0x00 0x00 0x2e 0x80 0x00 0x00 0x00 0x01 0xc0 0x00 0xe0 0x00 0x01 0x04 0x2d 0x00
 	0x00 0x00 0x15 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x88 0x2d 0x00
 	0x00 0x00 0x15 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x70 0x15 0x07
-	0x00 0x00 0x0a 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x15 0x08
+	0x80 0x00 0x0a 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x15 0x08
 	0x80 0x00 0x0a 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x01 0xc0 0x00 0x00 0x12 0x10
 	0x80 0x00 0x04 0x00 0x00 0x1c 0x00 0x00 0x00 0x00 0x02 0x20 0x00 0x00 0x14 0x10
 	0x80 0x00 0x04 0x00 0x00 0x22 0x00 0x00 0x00 0x00 0x04 0x10 0x00 0x00 0x14 0x11
