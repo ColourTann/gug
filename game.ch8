@@ -1339,6 +1339,16 @@
 		f_drawSprite # redraw
 		if vf == 1 begin
 			f_drawSprite #undraw
+			plane 1
+			f_drawSprite
+			if vf == 1 begin
+				# really hacky thing I should probably replace!
+				# Redraw in plane 1 to see if it actually collides with terrain, if it does, exit function
+				f_drawSprite
+				;
+			end
+
+			plane 2
 			i := spear1 
 			save a_spearAllData
 			
