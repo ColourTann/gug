@@ -64,9 +64,6 @@
 : monster3
 0 0 0 0 0 0 0 0 0 0
 
-: monster4
-0 0 0 0 0 0 0 0 0 0
-
 : f_drawMonster
 	f_selectMonsterImage
 	v0 <<= a_monsterFrame
@@ -143,54 +140,26 @@
 	a_monsterDX := 0
 	a_temp1 := 8
 
-	# find a free monster slot to put it in
-	i := monster1
-	i += a_temp1
-	load a_temp - a_temp
-	if a_temp == 0 begin
+	a_counter := 0
+
+	loop
 		i := monster1
-		save a_monsterAll
-		f_drawMonster
-		i := monster1
-		jump f_spawnMonsterDone
-	end
+		i += a_counter
+		i += a_temp1
+		load a_temp - a_temp
+		if a_temp == 0 begin
+			i := monster1
+			i += a_counter
+			save a_monsterAll
+			f_drawMonster
+			i := monster1
+			i += a_counter
+			jump f_spawnMonsterDone
+		end
+		a_counter += 10
+	if a_counter != 30 then again
+
 	
-
-	i := monster2
-	i += a_temp1
-	load a_temp - a_temp
-	if a_temp == 0 begin
-		i := monster2
-		save a_monsterAll
-		f_drawMonster
-		i := monster2
-		jump f_spawnMonsterDone
-	end
-
-
-
-	i := monster3
-	i += a_temp1
-	load a_temp - a_temp
-	if a_temp == 0 begin
-		i := monster3
-		save a_monsterAll
-		f_drawMonster
-		i := monster3
-		jump f_spawnMonsterDone
-	end
-
-	i := monster4
-	i += a_temp1
-	load a_temp - a_temp
-	if a_temp == 0 begin
-		i := monster4
-		save a_monsterAll
-		f_drawMonster
-		i := monster4
-		jump f_spawnMonsterDone
-	end
-
 	# no room for the monster, just return
 	;
 
@@ -221,18 +190,12 @@
 	: j_tickMonsters_3
 	i := monster3
 	load a_monsterAll
-	if a_monsterActive == 0 then jump j_tickMonsters_4
+	if a_monsterActive == 0 then jump j_tickMonsters_end
 	f_tickMonster
 	i := monster3
 	save a_monsterAll
 
-	: j_tickMonsters_4
-	i := monster4
-	load a_monsterAll
-	if a_monsterActive == 0 then jump j_tickMonsters_end
-	f_tickMonster
-	i := monster4
-	save a_monsterAll
+
 
 	
 	: j_tickMonsters_end
@@ -248,9 +211,6 @@
 	load a_monsterAll
 	a_temp += a_monsterActive
 	i := monster3
-	load a_monsterAll
-	a_temp += a_monsterActive
-	i := monster4
 	load a_monsterAll
 	a_temp += a_monsterActive
 	i := activeMonsters
@@ -275,9 +235,6 @@
 	i := monster3
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
-	i := monster4
-	load a_monsterAll
-	if a_monsterActive == 1 then f_drawMonster
 	pop
 ;
 
@@ -291,9 +248,6 @@
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
 	i := monster3
-	load a_monsterAll
-	if a_monsterActive == 1 then f_drawMonsterNice
-	i := monster4
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
 	pop
@@ -343,17 +297,9 @@
 	: j_moveAllMonstersUp_3
 	i := monster3
 	load a_monsterAll
-	if a_monsterActive == 0 then jump j_moveAllMonstersUp_4
-	a_monsterY += 1
-	i := monster3
-	save a_monsterAll
-
-	: j_moveAllMonstersUp_4
-	i := monster4
-	load a_monsterAll
 	if a_monsterActive == 0 then ;
 	a_monsterY += 1
-	i := monster4
+	i := monster3
 	save a_monsterAll
 ;
 
@@ -370,70 +316,45 @@
 	# caverns
 	i := downBatSprites ;
 	i := upBatSprites ;
-	; ;
-	; ;
 	# jungle
 	i := walkerSprites ;
 	i := shroomSprites ;
-	; ;  
-	; ;
 	# sky
 	i := lightningSprites ;
 	i := orbSprites ;
-	; ;
-	; ;
 
 : monsterInitTable
 	# caverns
 	f_downBatInit ;
 	f_upBatInit ;
-	; ;
-	; ;
 	# jungle
 	f_walkerInit ;
 	f_shroomInit ;
-	; ;
-	; ;
 	# sky
 	f_lightningInit ;
 	f_orbInit ;
-	; ;
-	; ;
-
 
 : monsterTickTable
 	# caverns
 	f_downBatTick ;
 	f_upBatTick ;
-	; ;
-	; ;
 	# jungle
 	f_walkerTick ;
 	f_shroomTick ;
-	; ;
-	; ;
 	# sky
 	f_lightningTick ;
 	f_orbTick ;
-	; ;
-	; ;
 
 : monsterHitTable
 	# caverns
 	f_downBatHit ;
 	f_upBatHit ;
-	; ;
-	; ;
 	# jungle
 	f_walkerHit ;
 	f_shroomHit ;
-	; ;
-	; ;
 	# sky
 	f_lightningHit ;
 	f_orbHit ;
-	; ;
-	; ;
 
 
 ########
@@ -1495,7 +1416,7 @@
 	: j_checkWhichMonster_3
 	i := monster3
 	load a_monsterAll
-	if a_monsterActive == 0 then jump j_checkWhichMonster_4
+	if a_monsterActive == 0 then jump j_checkWhichMonster_end
 	f_drawMonster
 	i := spear1
 	load a_spearAllData
@@ -1515,28 +1436,7 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
-	: j_checkWhichMonster_4
-	i := monster4
-	load a_monsterAll
-	if a_monsterActive == 0 then jump j_checkWhichMonster_end
-	f_drawMonster
-	i := spear1
-	load a_spearAllData
-	f_drawSprite
-	if vf == 1 begin
-		i := monster4
-		load a_monsterAll
-		f_drawMonsterNice
-		i := monster4
-		load a_monsterAll
-		f_hitBySpear
-		f_successfulHit
-		;
-	end
-	f_drawSprite # undraw
-	i := monster4
-	load a_monsterAll
-	f_drawMonster #undraw
+	
 
 	: j_checkWhichMonster_end
 	pop
@@ -1997,7 +1897,6 @@
 	jump f_drawPool
 	jump f_spawn0
 	jump f_spawn1
-	jump f_spawn2
 ;
 
 : f_drawGem
@@ -2053,7 +1952,7 @@
 	if a_fillY != a_specialHeight then again
 ;
 
-: f_spawn0
+: f_spawnBase
 	a_monsterX := a_temp
 	a_monsterY := 0
 	i := pixel
@@ -2062,38 +1961,20 @@
 	i := currentZone
 	load a_monsterType - a_monsterType
 	a_monsterType <<= a_monsterType
-	a_monsterType <<= a_monsterType
-	a_monsterType += 0
+;
+
+: f_spawn0
+	f_spawnBase
 	f_spawnMonster
 ;
 
 : f_spawn1
-	a_monsterX := a_temp
-	a_monsterY := 0
-	i := pixel
-	plane 1
-	sprite a_monsterX a_monsterY 1
-	i := currentZone
-	load a_monsterType - a_monsterType
-	a_monsterType <<= a_monsterType
-	a_monsterType <<= a_monsterType
+	f_spawnBase
 	a_monsterType += 1
 	f_spawnMonster
 ;
 
-: f_spawn2
-	a_monsterX := a_temp
-	a_monsterY := 0
-	i := pixel
-	plane 1
-	sprite a_monsterX a_monsterY 1
-	i := currentZone
-	load a_monsterType - a_monsterType
-	a_monsterType <<= a_monsterType
-	a_monsterType <<= a_monsterType
-	a_monsterType += 2
-	f_spawnMonster
-;
+
 
 : amy
 0b11
@@ -2117,8 +1998,6 @@
 	i := monster2
 	save a_monsterAll
 	i := monster3
-	save a_monsterAll
-	i := monster4
 	save a_monsterAll
 	i := spear1
 	save a_spearAllData
@@ -2262,7 +2141,7 @@
 #
 
 : currentZone 
-2
+1
 
 : chunks
 
@@ -2324,40 +2203,42 @@
 	##########
 	# JUNGLE #
 	##########
-	
-	## left start ##
+		
+	#################
 
-	i := long jungle_ll0 ;
-	i := long jungle_ll1 ;
+	## center start##
+
+	i := long jungle_cc0 ;
+	i := long jungle_cc1 ;
+
+	i := long jungle_cl0 ;
+	i := long jungle_cl1 ;
+
+	i := long jungle_cr0 ;
+	i := long jungle_cr1 ;
+
+	################
+
+	## left start ##
 
 	i := long jungle_lc0 ;
 	i := long jungle_lc1 ;	
+
+	i := long jungle_ll0 ;
+	i := long jungle_ll1 ;
 
 	i := long jungle_lr0 ;
 	i := long jungle_lr1 ;
 
 	#################
 
-	## center start##
-
-	i := long jungle_cl0 ;
-	i := long jungle_cl1 ;
-
-	i := long jungle_cc0 ;
-	i := long jungle_cc1 ;
-
-	i := long jungle_cr0 ;
-	i := long jungle_cr1 ;
-
-	#################
-
 	## right start ##
-
-	i := long jungle_rl0 ;
-	i := long jungle_rl1 ;
 
 	i := long jungle_rc0 ;
 	i := long jungle_rc1 ;	
+
+	i := long jungle_rl0 ;
+	i := long jungle_rl1 ;	
 
 	i := long jungle_rr0 ;
 	i := long jungle_rr1 ;
