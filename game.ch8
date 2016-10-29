@@ -1579,7 +1579,7 @@
 : f_menu_start_game
 	# set level warp here if you want to start somewhere other than
 	# the caverns
-	a_temp := 1
+	a_temp := 2
 	i := currentZone
 	save a_temp - a_temp
 ;
@@ -2083,18 +2083,14 @@
 	save a_levelDataAll
 	i := lostGame
 	save v0
-	v0 := 1
-	i := currentZone
-	save v1 # distance and current zone
+	i := distance
+	save v0 
 	v0 := 3
 	i := currentChunkExit
 	save v0
 	v0 := -1
 	i := chunkLeftToDraw
 	save v0
-	plane 3
-	clear
-	plane 1
 	f_setup
 ;
 
