@@ -1579,7 +1579,7 @@
 : f_menu_start_game
 	# set level warp here if you want to start somewhere other than
 	# the caverns
-	a_temp := 2
+	a_temp := 1
 	i := currentZone
 	save a_temp - a_temp
 ;
