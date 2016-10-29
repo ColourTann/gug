@@ -849,6 +849,7 @@
 	f_drawSprite # undraw
 	plane 2
 	f_drawSprite # draw plane 2
+
 	if vf != 0 then jump j_playerSlowCollisionH_death # it's a monster/death collision!
 	f_drawSprite # undraw plane 2
 	# it's a terrain collision!
@@ -876,6 +877,7 @@
 ;
 
 : j_playerSlowCollisionH_death
+	f_drawSprite
 	f_setLossFlag
 ;
 
@@ -1011,6 +1013,9 @@
 ;
 
 : j_playerSlowCollisionV_death
+	f_drawSprite # undraw
+	plane 1
+	f_drawSprite # undraw
 	f_setLossFlag
 ;
 
@@ -1553,10 +1558,10 @@
 	f_reset	
 	loop
 		f_tickPlayer
+		f_checkLossFlag
 		f_tickSpears
 		f_tickMonsters		
 		f_checkScrolling
-		f_checkLossFlag
 		f_delayFPS
 	again
 ;
@@ -2097,15 +2102,38 @@
 : lostGame 0
 
 : f_setLossFlag
+	push
 	i := lostGame
 	v0 := 1
 	save v0
+	pop
 ;
 
 : f_checkLossFlag
+
 	i := lostGame
 	load a_temp - a_temp
-	if a_temp == 1 then jump f_reset
+	if a_temp == 1 then jump f_showDeath
+;
+
+: f_showDeath
+	
+	a_counter := 0
+	loop
+		i := player
+		load a_playerAllData
+		plane 2
+		f_drawAmy
+	
+		f_delayFPS
+		f_delayFPS
+		f_delayFPS
+		f_delayFPS
+		f_delayFPS
+		f_delayFPS
+		a_counter += 1
+	if a_counter != 7 then again
+	jump f_reset
 ;
 
 : zeroes
