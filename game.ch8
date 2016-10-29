@@ -1792,8 +1792,8 @@
 	a_currentChunkEntrance := a_currentChunkExit
 
 	i := distance
-	load a_temp - a_temp
-	if a_temp > c_distPerZone begin
+	load a_temp1 - a_temp1
+	if a_temp1 > c_distPerZone begin
 		if a_currentChunkEntrance == 0 begin
 			 a_currentChunkEntrance := 3
 			 f_nextZone
