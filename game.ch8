@@ -2083,18 +2083,14 @@
 	save a_levelDataAll
 	i := lostGame
 	save v0
-	v0 := 1
-	i := currentZone
-	save v1 # distance and current zone
+	i := distance
+	save v0 
 	v0 := 3
 	i := currentChunkExit
 	save v0
 	v0 := -1
 	i := chunkLeftToDraw
 	save v0
-	plane 3
-	clear
-	plane 1
 	f_setup
 ;
 
