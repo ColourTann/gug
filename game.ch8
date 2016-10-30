@@ -1902,7 +1902,6 @@
 		load a_temp2 - a_temp2
 		a_temp2 += a_temp1
 		save a_temp2 - a_temp2
-		:breakpoint temp2
 		# it is used as an offset for where to start drawing so subtract 1!
 		a_chunkLeftToDraw += -1
 	end
