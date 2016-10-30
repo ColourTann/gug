@@ -2142,6 +2142,12 @@
 ;
 
 : f_showDeath
+	a_counter := 0
+	loop
+		f_incrementTime
+		a_counter += 1
+	if a_counter != 200 then again
+	# 200-frame time penalty for each death
 	i := deaths
 	load v0
 	v0 += 1
