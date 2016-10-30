@@ -1741,7 +1741,7 @@
 
 : j_input_spear
 	a_temp1 := 0
-	a_temp := 6 # E
+	a_temp := 8 # E
 	if a_temp key then a_temp1 := 1
 	i := spearThrowRequested
 	save a_temp1 - a_temp1
