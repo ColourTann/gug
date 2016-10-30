@@ -2092,6 +2092,23 @@
 
 : f_reset
 	# gotta reset *everything* here
+
+	
+	i := previousZone
+	load a_temp1 - a_temp1
+	i := level
+	load a_levelDataAll
+	i := currentZone
+	load a_temp - a_temp
+	if a_temp != a_temp1 begin
+		if a_currentChunkEntrance == 3 begin
+			a_temp += -1
+			save a_temp - a_temp
+		end
+	end
+	i := previousZone
+	save a_temp - a_temp
+
 	i := zeroes
 	load va
 	i := player
@@ -2113,9 +2130,6 @@
 	i := lostGame
 	save v0
 	i := distance
-	load v0 
-	v0 += -20
-	if v0 > 200 then v0 := 0
 	save v0
 	v0 := 3
 	i := currentChunkExit
@@ -2144,12 +2158,6 @@
 ;
 
 : f_showDeath
-	a_counter := 0
-	loop
-		f_incrementTime
-		a_counter += 1
-	if a_counter != 200 then again
-	# 200-frame time penalty for each death
 	i := deaths
 	load v0
 	v0 += 1
@@ -2194,7 +2202,7 @@
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	
 
 
 
@@ -2280,6 +2288,8 @@
 
 : currentZone 
 0
+: previousZone
+1
 
 : distance
 0
