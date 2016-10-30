@@ -1,9 +1,9 @@
 {
 "tickrate":"1000",
-"backgroundColor":"#2b211b",
-"fillColor":"#836b5b",
-"fillColor2":"#f42400",
-"blendColor":"#a42400",
+"backgroundColor":"#121212",
+"fillColor":"#4b636f",
+"fillColor2":"#af2d3d",
+"blendColor":"#af2d3d",
 "buzzColor":"#000000",
 "quietColor":"#000000",
 "shiftQuirks":false,
