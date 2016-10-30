@@ -1902,7 +1902,7 @@
 		load a_temp2 - a_temp2
 		a_temp2 += a_temp1
 		save a_temp2 - a_temp2
-
+		:breakpoint temp2
 		# it is used as an offset for where to start drawing so subtract 1!
 		a_chunkLeftToDraw += -1
 	end
@@ -2114,7 +2114,10 @@
 	i := lostGame
 	save v0
 	i := distance
-	save v0 
+	load v0 
+	v0 += -20
+	if v0 > 200 then v0 := 0
+	save v0
 	v0 := 3
 	i := currentChunkExit
 	save v0
@@ -2185,7 +2188,6 @@
 	0 0
 
 : stack
-	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
