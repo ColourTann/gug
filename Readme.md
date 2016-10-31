@@ -11,7 +11,7 @@ rations for the climb, she sets off skyward to create a legend of her own...
 
 Move Amy to the left with `A`, and to the right with `D`
 
-   ![moving left to right](https://github.com/ColourTann/gug/blob/manual/manual/movement.gif)
+![moving left to right](https://github.com/ColourTann/gug/blob/manual/manual/movement.gif)
 
 Jump with `W`, and press `W` again while mid-air to jump again.
 
@@ -23,3 +23,12 @@ climb up.
 
 ![killing enemies with spears](https://github.com/ColourTann/gug/blob/manual/manual/enemies.gif)
 ![using spears as platforms](https://github.com/ColourTann/gug/blob/manual/manual/spears.gif)
+
+
+## Levels
+
+There are no maps of the dark caverns and what lies above, so each time you
+play these areas will be different! Once Amy has finished exploring a
+level she will be able to start from the beginning of the next, so don't
+give up! Can you conquer the caverns, the jungle, and ancient sky
+islands all in one go? See how quickly you can make it to the top!
