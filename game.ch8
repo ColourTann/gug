@@ -1575,6 +1575,11 @@
 	loop
 		f_scroll
 		a_counter += 1
+
+		# allow early start
+		a_temp := 1
+		if a_temp key then jump f_menu_start_game_clear
+
 		f_delayFPS
 	if a_counter != 88 then again
 
@@ -1584,10 +1589,13 @@
 		if a_temp key then jump f_menu_start_game
 	again
 
+: f_menu_start_game_clear
+	clear
+
 : f_menu_start_game
 	# set level warp here if you want to start somewhere other than
 	# the caverns
-	a_temp := 3
+	a_temp := 1
 	i := currentZone
 	save a_temp - a_temp
 ;
