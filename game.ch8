@@ -320,7 +320,7 @@
 	i := walkerSprites ;
 	i := shroomSprites ;
 	# sky
-	i := lightningSprites ;
+	; ;
 	i := birdSprites ;
 
 : monsterInitTable
@@ -331,7 +331,7 @@
 	f_walkerInit ;
 	f_shroomInit ;
 	# sky
-	f_lightningInit ;
+	; ;
 	f_birdInit ;
 
 : monsterTickTable
@@ -342,7 +342,7 @@
 	f_walkerTick ;
 	f_shroomTick ;
 	# sky
-	f_lightningTick ;
+	; ;
 	f_birdTick ;
 
 : monsterHitTable
@@ -353,7 +353,7 @@
 	f_walkerHit ;
 	f_shroomHit ;
 	# sky
-	f_lightningHit ;
+	; ;
 	f_birdHit ;
 
 
@@ -658,52 +658,6 @@
 	f_playAudio
 ;
 
-########
-# lightning
-
-: lightningSprites
-: lightningBlank
-	0b0000000
-	0b0000000
-	0b0000000
-	0b0000000
-	0b0000000
-	0b0000000
-	0b0000000
-	0b0000000
-: lightningFrame
-	0b1000000
-	0b1010000
-	0b1110000
-	0b1010000
-	0b0010000
-	0b0000000
-	0b0000000
-	0b0000000
-
-
-: f_lightningInit
-;
-
-: f_lightningTick	
-	
-	
-	if a_monsterSpecial == 0 then a_monsterFrame := 1
-	if a_monsterSpecial == 1 then a_monsterDY := 4
-	if a_monsterSpecial == 7 begin
-		a_monsterFrame := 0
-		a_monsterDY := -24
-	end
-	if a_monsterSpecial == 8 then a_monsterDY := 0
-	a_monsterSpecial += 1
-	
-	if a_monsterSpecial == 14 begin
-		a_monsterSpecial := 0
-	end
-;
-
-: f_lightningHit
-;
 
 ########
 # bird
@@ -1598,6 +1552,8 @@
 	a_temp := 1
 	i := currentZone
 	save a_temp - a_temp
+	i := previousZone
+	save a_temp - a_temp
 ;
 
 : f_setup 
@@ -2209,6 +2165,9 @@
 	0
 
 : stack
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
 	0 0 0 0 0 0 0 0 0 0 0 0 0 0
