@@ -11,8 +11,15 @@ rations for the climb, she sets off skyward to create a legend of her own...
 
 Move Amy to the left with `A`, and to the right with `D`
 
+   ![moving left to right](https://github.com/ColourTann/gug/blob/manual/manual/movement.gif)
+
 Jump with `W`, and press `W` again while mid-air to jump again.
+
+![jumping and double jumping](https://github.com/ColourTann/gug/blob/manual/manual/jumping.gif)
 
 Throw a spear with `S`. You can have up to 3 spears on the screen at a
 time. Use spears to defeat enemies and create platforms to help you
 climb up.
+
+![killing enemies with spears](https://github.com/ColourTann/gug/blob/manual/manual/enemies.gif)
+![using spears as platforms](https://github.com/ColourTann/gug/blob/manual/manual/spears.gif)
