@@ -1,13 +1,53 @@
+#################################
+#
+# Skyward
+#  All of her life Amy has lived in the darkness, in the safety of the
+#  caverns her village has called home. Legends tell of a crystal above
+#  that will grant anyone a single wish, but no one has seen the sky in
+#  the generations. Enraptured by these tales, she packs for a journey
+#  to see for herself if these stories are true. Armed with only a few
+#  spears and rations for the climb, she sets off skyward to create a
+#  legend of her  own...
+#
+# Authors:
+#   Tann (@ColourTann)
+#   jackie kircher (@jackiekircher)
+#
+# Play online at
+#  http://www.awfuljams.com/octojam-iii/games/skyward
+#
+# Controls
+#   Move Amy to the left with `A`, and to the right with `D`
+#   Jump with `W`, and press `W` again while mid-air to jump again.
+#   Throw a spear with `S`.
+#    * You can have up to 3 spears on the screen at a time.
+#    * Use spears to defeat enemies and create platforms to help you
+#       climb up.
+
+
+
+#################################
+#
+# Game Constants
+#
+
 :const c_jumpHeight       -14
 :const c_doubleJumpHeight -8
 :const c_horizontalSpeed   1
 :const c_gravityStrength   2
 :const c_spearCooldown 12
 
+
+#################################
+#
+# Global Aliases
+#
+
 :alias a_counter    vd
 :alias a_temp 		vc
 :alias a_temp1   	vb
 :alias a_temp2   	va
+
 
 #################################
 #
@@ -24,18 +64,19 @@
 :alias a_playerAllData 		 v6
 
 : player
-: playerX			0
-: playerY 			0
-: playerSpeedX 		0
-: playerSpeedY		0
-: playerType		0
-: playerDirection 	1	# 0 for facing left, 1 for facing right
-: playerJumpAvailable	0
+: playerX             0
+: playerY             0
+: playerSpeedX        0
+: playerSpeedY        0
+: playerType          0
+: playerDirection     1	# 0 for facing left, 1 for facing right
+: playerJumpAvailable 0
 
 : f_drawAmy
 	i := amy
 	sprite a_playerX a_playerY 3
 ;
+
 
 #################################
 #
@@ -44,16 +85,16 @@
 
 : activeMonsters 0 # currently used to skip over calculations if there are no monsters
 # v0 is reserved for jump0
-:alias a_monsterX 			v1
-:alias a_monsterY 			v2
-:alias a_monsterDX 			v3
-:alias a_monsterDY 			v4
-:alias a_monsterType 		v5
-:alias a_monsterCooldown 	v6
-:alias a_monsterSpecial 	v7
-:alias a_monsterActive 		v8
-:alias a_monsterFrame 		v9 # i offset
-:alias a_monsterAll 		v9
+:alias a_monsterX         v1
+:alias a_monsterY         v2
+:alias a_monsterDX        v3
+:alias a_monsterDY        v4
+:alias a_monsterType      v5
+:alias a_monsterCooldown  v6
+:alias a_monsterSpecial   v7
+:alias a_monsterActive    v8
+:alias a_monsterFrame     v9 # i offset
+:alias a_monsterAll       v9
 
 : monster1
 0 0 0 0 0 0 0 0 0 0
@@ -74,12 +115,10 @@
 ;
 
 : f_selectMonsterImage
-	
 	v0 <<= a_monsterType
 	v0 <<= v0
 	jump0 monsterImageTable
 ;
-
 
 : f_drawMonsterNice
 	push
@@ -91,11 +130,7 @@
 	i += v0
 	v0 := a_temp
 
-
 	a_temp := 64
-
-
-
 	a_temp -= a_monsterY
 
 	if a_temp == 0 then jump j_drawMonster_end
@@ -131,7 +166,6 @@
 
 : f_spawnMonster
 	plane 2
-	
 
 	a_monsterActive := 1
 	a_monsterFrame := 0
@@ -159,7 +193,6 @@
 		a_counter += 10
 	if a_counter != 30 then again
 
-	
 	# no room for the monster, just return
 	;
 
@@ -195,8 +228,6 @@
 	i := monster3
 	save a_monsterAll
 
-
-
 	
 	: j_tickMonsters_end
 	f_countMonsters
@@ -226,6 +257,7 @@
 
 : f_drawAllMonsters
 	push
+
 	i := monster1
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
@@ -235,12 +267,14 @@
 	i := monster3
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonster
+
 	pop
 ;
 
 : f_drawAllMonstersNice
 	# currently unused!
 	push
+
 	i := monster1
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
@@ -250,6 +284,7 @@
 	i := monster3
 	load a_monsterAll
 	if a_monsterActive == 1 then f_drawMonsterNice
+
 	pop
 ;
 
@@ -357,7 +392,7 @@
 	f_birdHit ;
 
 
-########
+#################
 # down bat
 
 : downBatSprites
@@ -407,7 +442,8 @@
 	f_playAudio
 ;
 
-########
+
+#################
 # up bat
 
 : upBatSprites
@@ -489,7 +525,8 @@
 	f_playAudio
 ;
 
-########
+
+#################
 # walker
 
 : walkerSprites
@@ -542,7 +579,8 @@
 	f_playAudio
 ;
 
-########
+
+#################
 # shroom
 
 :const c_shroomWaitFrames 40
@@ -659,7 +697,7 @@
 ;
 
 
-########
+#################
 # bird
 
 : birdSprites
@@ -716,10 +754,6 @@
 	if a_monsterSpecial == 8 then a_monsterFrame := 0
 	if a_monsterSpecial == 15 then a_monsterDY := 1
 	if a_monsterSpecial == 20 then a_monsterSpecial := 0
-	
-	
-
-	
 ;
 
 : f_birdHit
@@ -728,6 +762,7 @@
 	i := long audio_spearHitEnemy_bat
 	f_playAudio
 ;
+
 
 #################################
 #
@@ -800,6 +835,7 @@
 	f_drawSprite # undraw
 	plane 1
 ;
+
 : j_playerSlowCollisionH_collided
 	# now have to decide between player or monster collision
 	f_drawSprite # undraw
@@ -879,11 +915,11 @@
 	# the ground the player will step up to will cause a collision
 	if a_temp1 == 1 then jump j_checkCollisionH_checkStep_false
 
-: j_checkCollisionH_checkStep_true
+	: j_checkCollisionH_checkStep_true
 	vf := 1
 	return
 
-: j_checkCollisionH_checkStep_false
+	: j_checkCollisionH_checkStep_false
 	vf := 0
 ;
 
@@ -949,11 +985,11 @@
 	plane 2
 	f_drawSprite # undraw plane 2
 	plane 1
-: j_playerSlowCollisionV_detectCollision_false
 
+	: j_playerSlowCollisionV_detectCollision_false
 	return
 
-: j_playerSlowCollisionV_detectCollision_true
+	: j_playerSlowCollisionV_detectCollision_true
 	f_drawSprite # undraw
 	plane 2
 	f_drawSprite # test draw plane 2
@@ -976,22 +1012,21 @@
 ;
 
 
-
 #################################
 #
 #  Spear Data
 #
 
-:const c_spearGravityStrength 1
-:const c_spearInitialX        5
+:const c_spearGravityStrength  1
+:const c_spearInitialX         5
 :const c_spearInitialY        -3
 
-:alias a_spearX      v0
-:alias a_spearY      v1
-:alias a_spearSpeedX v2
-:alias a_spearSpeedY v3
-:alias a_spearType 	 v4
-:alias a_spearActive v5
+:alias a_spearX       v0
+:alias a_spearY       v1
+:alias a_spearSpeedX  v2
+:alias a_spearSpeedY  v3
+:alias a_spearType    v4
+:alias a_spearActive  v5
 :alias a_spearAllData v5
 
 : spearThrowRequested 0
@@ -1063,12 +1098,14 @@
 
 : f_spearGravity
 	push
+
 	i := spear1
 	load v6
 	a_spearSpeedY += c_spearGravityStrength
 	if a_spearSpeedX == 0 then a_spearSpeedY := 0  # stick spear in walls
 	i := spear1
 	save v5
+
 	pop
 ;
 
@@ -1102,7 +1139,7 @@
 	f_drawSpear
 	jump j_throwSpear_fail
 
-: j_throwSpear_succeed
+	: j_throwSpear_succeed
 	i := long audio_spearThrow
 	f_playAudio
 	f_queue_spears
@@ -1113,7 +1150,7 @@
 	a_temp := c_spearCooldown
 	save a_temp - a_temp
 
-: j_throwSpear_fail
+	: j_throwSpear_fail
 	pop
 ;
 
@@ -1142,6 +1179,7 @@
 
 : f_checkSpearCollisionV
 	push
+
 	i := spear1
 	load a_spearAllData
 	if a_spearSpeedX == 0 then jump j_checkCollisionV_return
@@ -1162,11 +1200,11 @@
 	a_spearActive := 0
 	f_drawSpear
 
-: j_checkCollisionV_spearSave
+	: j_checkCollisionV_spearSave
 	i := spear1
 	save v5
 
-: j_checkCollisionV_return
+	: j_checkCollisionV_return
 	pop
 ;
 
@@ -1198,9 +1236,9 @@
 		end
 	if a_partialDY != 0 then again
 	: j_spearSlowCollisionV_false
-;
+	;
 
-: j_spearSlowCollisionV_true
+	: j_spearSlowCollisionV_true
 	a_spriteSpeedY := 0
 	a_spriteSpeedX := 0
 
@@ -1264,7 +1302,6 @@
 	a_counter := a_spriteSpeedX
 	
 	loop	
-		
 		f_drawSprite # undraw
 		
 		a_counter -= a_temp
@@ -1294,7 +1331,6 @@
 	a_counter := a_spriteSpeedX
 	
 	loop	
-		
 		f_drawSprite # undraw
 		a_counter -= a_temp
 		a_spriteX += a_temp
@@ -1408,8 +1444,6 @@
 	load a_monsterAll
 	f_drawMonster #undraw
 
-	
-
 	: j_checkWhichMonster_end
 	pop
 	a_temp2 := 0
@@ -1425,6 +1459,7 @@
 	pop
 ;
 
+
 #################################
 #
 #  Level Data
@@ -1432,17 +1467,17 @@
 
 :const c_distPerZone 42
 
-:alias a_bgX					v0
-:alias a_bgY					v1
-:alias a_chunkLeftToDraw		v2
-:alias a_fillX 					v3
-:alias a_fillY 					v4
-:alias a_currentChunkEntrance 	v5
-:alias a_currentChunkExit 		v6
-:alias a_currentChunkIndex 		v7
-:alias a_specialWidth 			v8
-:alias a_specialHeight			v9
-:alias a_levelDataAll			v9
+:alias a_bgX                  v0
+:alias a_bgY                  v1
+:alias a_chunkLeftToDraw      v2
+:alias a_fillX                v3
+:alias a_fillY                v4
+:alias a_currentChunkEntrance v5
+:alias a_currentChunkExit     v6
+:alias a_currentChunkIndex    v7
+:alias a_specialWidth         v8
+:alias a_specialHeight        v9
+:alias a_levelDataAll         v9
 : dot # used for single pixel collisions
 	0b1
 
@@ -1491,6 +1526,7 @@
 
 : f_jumpKeyReleased
 	push
+
 	i := jumpKeyData
 	load v1
 	if v0 != 1 then jump f_jumpKeyReleased_return
@@ -1499,9 +1535,10 @@
 	i := jumpKeyData
 	save v1
 
-: f_jumpKeyReleased_return
+	: f_jumpKeyReleased_return
 	pop
 ;
+
 
 #################################
 #
@@ -1543,10 +1580,10 @@
 		if a_temp key then jump f_menu_start_game
 	again
 
-: f_menu_start_game_clear
+	: f_menu_start_game_clear
 	clear
 
-: f_menu_start_game
+	: f_menu_start_game
 	# set level warp here if you want to start somewhere other than
 	# the caverns
 	a_temp := 1
@@ -1556,7 +1593,7 @@
 	save a_temp - a_temp
 ;
 
-: f_setup 
+: f_setup
 	# draw a bunch of map and setup player starting position
 	a_counter := 0
 	loop
@@ -1604,6 +1641,8 @@
 ;
 
 : f_delayMenu
+	# just like delayFPS but at a highter framerate so that the long menu
+	# screen doesn't take forever to scroll up
 	loop
 		vf := delay
 		if vf != 0 then again
@@ -1622,12 +1661,14 @@
 
 : f_checkScrolling
 	push
+
 	i := player
 	load a_playerY
 	# when player gets too far down, scroll up and draw more row 
 	if a_playerY < 30 begin
 		f_scroll
 	end
+
 	pop
 ;
 
@@ -1672,7 +1713,7 @@
 	load v6
 	a_playerSpeedX := 0
 
-: j_input_jump
+	: j_input_jump
 	a_temp := 5 # W
 	if a_temp -key then jump j_input_jumpRelease
 	if a_playerJumpAvailable == 0 then jump j_input_left
@@ -1688,7 +1729,7 @@
 	f_jumpKeyPressed
 	jump j_input_left
 
-: j_input_doubleJump
+	: j_input_doubleJump
 	# don't double jump unless the jump key has been released
 	i := jumpKeyReleased
 	load va - va
@@ -1700,10 +1741,10 @@
 	f_jumpKeyPressed
 	jump j_input_left
 
-: j_input_jumpRelease
+	: j_input_jumpRelease
 	f_jumpKeyReleased
 
-: j_input_left
+	: j_input_left
 	a_temp := 7 # A
 	if a_temp -key then jump j_input_right
 	a_temp1 := c_horizontalSpeed
@@ -1711,20 +1752,20 @@
 	a_playerDirection := 0
 	jump j_input_spear
 
-: j_input_right
+	: j_input_right
 	a_temp := 9 # D
 	if a_temp -key then jump j_input_spear
 	a_playerSpeedX := c_horizontalSpeed
 	a_playerDirection := 1
 
-: j_input_spear
+	: j_input_spear
 	a_temp1 := 0
 	a_temp := 8 # E
 	if a_temp key then a_temp1 := 1
 	i := spearThrowRequested
 	save a_temp1 - a_temp1
 
-: j_input_save
+	: j_input_save
 	i := player
 	save v6
 	pop
@@ -1732,11 +1773,13 @@
 
 : f_playerGravity
 	push
+
 	i := player
 	load v6
 	a_playerSpeedY += c_gravityStrength
 	i := player
 	save v6
+
 	pop
 ;
 
@@ -1744,6 +1787,7 @@
 	# scrolls exactly one row
 	# a bit inefficient but I like how it looks when you ascend faster than the scrolling
 	push
+
 	f_moveAllMonstersUp
 	i := player
 	load a_playerY
@@ -1779,6 +1823,7 @@
 
 : f_nextZone
 	push
+
 	i := currentZone
 	load a_temp - a_temp
 	a_temp += 1
@@ -1786,6 +1831,7 @@
 	i := distance
 	a_temp := 0
 	save a_temp - a_temp
+
 	pop
 ;
 
@@ -1861,6 +1907,7 @@
 
 : f_drawMap
 	push
+
 	i := level
 	load a_specialHeight
 	# chunkLeftToDraw is an offset to start drawing the chunk data
@@ -1919,6 +1966,7 @@
 
 	i := level
 	save a_specialHeight	
+
 	pop
 ;
 
@@ -2056,7 +2104,6 @@
 ;
 
 
-
 : amy
 0b11
 0b11
@@ -2070,7 +2117,6 @@
 
 : f_reset
 	# gotta reset *everything* here
-
 	
 	i := previousZone
 	load a_temp1 - a_temp1
@@ -2122,14 +2168,15 @@
 
 : f_setLossFlag
 	push
+
 	i := lostGame
 	v0 := 1
 	save v0
+
 	pop
 ;
 
 : f_checkLossFlag
-
 	i := lostGame
 	load a_temp - a_temp
 	if a_temp == 1 then jump f_showDeath
@@ -2160,6 +2207,7 @@
 
 : zeroes
 0 0 0 0 0 0 0 0 0 0
+
 
 #################################
 #
@@ -2226,8 +2274,10 @@
 ;
 
 
-
-
+#################################
+#
+# Audio
+#
 
 : f_playAudio
 	load vf - vf
@@ -2237,10 +2287,11 @@
 	buzzer := vf
 ;
 
+
 #################################
 #
 #  Chunks
-#  
+#
 #  Each chunk is composed of
 #  Byte 0: map height in pixels
 #  Bytes 1-1+(height/2): special bytes
@@ -2259,9 +2310,7 @@
 #  But it's concise!
 #
 
-
-
-: currentZone 
+: currentZone
 0
 : previousZone
 1
@@ -2275,9 +2324,7 @@
 : time
 0 0 0 0
 
-
 : chunks
-
 : chunkStarts
 	i := long menu_screen
 	;
@@ -2289,7 +2336,6 @@
 	;
 	i := long sky_end
 	;
-
 
 	# this is super hacky don't look!!
 	: f_ending
@@ -2316,7 +2362,7 @@
 	again
 
 : f_drawScore
-	# v3 is startX 
+	# v3 is startX
 	# v4 is startY
 	# i points to value
 	load v0
@@ -2324,8 +2370,6 @@
 	i := base100
 	bcd v0
 	load v2
-	
-
 	
 	a_counter := 0
 	loop
@@ -2363,9 +2407,9 @@
 	i := long cavern_lr0 ;
 	i := long cavern_lr1 ;
 
-	#################
+	##################
 
-	## center start##
+	## center start ##
 
 	i := long cavern_cl0 ;
 	i := long cavern_cl1 ;
@@ -2397,9 +2441,9 @@
 	# JUNGLE #
 	##########
 		
-	#################
+	##################
 
-	## center start##
+	## center start ##
 
 	i := long jungle_cc0 ;
 	i := long jungle_cc1 ;
@@ -2455,9 +2499,9 @@
 	i := long sky_vc0 ;
 	i := long sky_vc1 ;
 
-	#################
+	##################
 
-	## center start##
+	## center start ##
 
 	i := long sky_iv0 ;
 	i := long sky_iv1 ;
@@ -2483,13 +2527,20 @@
 
 	################
 
-################################# # #
+
+
+########################################################################
+#                      BEGIN LONG ADDRESS SPACE                        #
+########################################################################
+
+
+#################################
 #
 #  Sounds
 #  Each sound is:
 #  - 1 byte header which detemines how long the audio is played for
 #  - 16 bytes of 1-bit audio data
-#  
+#
 #  To use: set i to an audio label, call f_playAudio. [nukes ve and vf]
 #
 
@@ -2506,8 +2557,11 @@
 	3
 	0x55 0xAA 0x55 0xAA 0x55 0xAA 0x55 0xAA 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
 
+
 #################################
-# Menu
+#
+#  Menu
+#
 
 : menu_screen
 	212
@@ -2727,12 +2781,9 @@
 
 
 #####################################
-#				Chunks 				#
-#####################################
-
-
-
-
+#
+#  Level Chunks
+#
 
 : cavern_cc0
 	100
@@ -5917,4 +5968,3 @@
 	0x00 0x03 0xff 0x80 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x04 0x80 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x04 0x00 0x00 0x00 0x00
 	0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-	
